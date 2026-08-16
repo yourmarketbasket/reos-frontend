@@ -245,7 +245,7 @@ const routeRolePermissions = {
   '/tiers': ['superadmin', 'landlord', 'agent'],
   '/property-approvals': ['superadmin'],
   '/regions': ['superadmin'],
-  '/commission-rules': ['superadmin', 'landlord', 'agent'],
+  '/commission-rules': ['superadmin', 'landlord', 'agent', 'staff', 'caretaker'],
   '/gateways': ['superadmin', 'billing_admin'],
   '/users': ['superadmin', 'support_admin'],
   '/sms': ['superadmin', 'technical_admin'],

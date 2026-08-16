@@ -11,7 +11,7 @@
         <h1 class="text-2xl font-bold tracking-tight font-heading text-dark">Commission Rules</h1>
         <p class="text-xs text-slate-500 mt-1">Configure automated commission rates for your agents, caretakers, and staff members.</p>
       </div>
-      <button @click="openCreateModal" class="inline-flex items-center gap-2 bg-brand-500 hover:bg-brand-600 text-dark font-bold px-4 py-2.5 rounded-xl text-sm transition-all shadow-sm flex-shrink-0">
+      <button v-if="canManage" @click="openCreateModal" class="inline-flex items-center gap-2 bg-brand-500 hover:bg-brand-600 text-dark font-bold px-4 py-2.5 rounded-xl text-sm transition-all shadow-sm flex-shrink-0">
         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
         </svg>
@@ -37,7 +37,7 @@
               <th class="px-4 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Trigger Event</th>
               <th class="px-4 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Property Scope</th>
               <th class="px-4 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Status</th>
-              <th class="px-6 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-right">Actions</th>
+              <th v-if="canManage" class="px-6 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-right">Actions</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-50">
@@ -67,7 +67,7 @@
                   {{ rule.is_active ? 'Active' : 'Paused' }}
                 </span>
               </td>
-              <td class="px-6 py-3.5 text-right">
+              <td v-if="canManage" class="px-6 py-3.5 text-right">
                 <div class="flex items-center justify-end gap-1.5">
                   <button @click="openEditModal(rule)" class="p-1.5 text-slate-400 hover:text-brand-700 hover:bg-brand-50 rounded-lg transition-colors" title="Edit Rule">
                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
@@ -344,13 +344,16 @@ export default {
       await store.fetchCommissionRules();
     });
 
+    const userRole = computed(() => store.user?.role || '');
+    const canManage = computed(() => ['superadmin', 'landlord', 'agent'].includes(userRole.value));
 
     // --- Pagination ---
     const { paginatedItems: pagedCommissionRules, currentPage, totalPages, totalItems, startItem, endItem, pageNumbers, pageSize, prevPage, nextPage, goToPage } = usePagination(commissionRules);
-        return {
+    return {
       showModal, isEdit, formLoading, actionLoading, formError, deleteTarget, form,
       commissionRules, properties, teamList, formatTrigger, getPropertyName, getStaffEmail,
-      openCreateModal, openEditModal, closeModal, saveForm, confirmDelete, handleDelete, pagedCommissionRules, currentPage, totalPages, totalItems, startItem, endItem, pageNumbers, pageSize, prevPage, nextPage, goToPage
+      openCreateModal, openEditModal, closeModal, saveForm, confirmDelete, handleDelete, pagedCommissionRules, currentPage, totalPages, totalItems, startItem, endItem, pageNumbers, pageSize, prevPage, nextPage, goToPage,
+      canManage
     };
   }
 };
