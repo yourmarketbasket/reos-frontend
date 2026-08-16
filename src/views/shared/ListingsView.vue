@@ -181,11 +181,43 @@
         </div>
       </div>
     </div>
+
+    <!-- Create Listing Modal overlay -->
+    <div v-if="showCreateModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[99] flex items-center justify-center p-4">
+      <div class="bg-white border border-slate-200 rounded-2xl max-w-md w-full p-6 shadow-xl space-y-4">
+        <h3 class="font-heading text-lg font-bold text-slate-800">Create Public Listing</h3>
+        <p class="text-xs text-slate-500 leading-relaxed">Select property and advertising option to create a public listing.</p>
+        
+        <div class="space-y-3">
+          <div>
+            <label class="form-label text-[10px]">Select Property</label>
+            <select v-model="createForm.propertyId" required class="form-select text-xs">
+              <option value="" disabled>Select property…</option>
+              <option v-for="p in myProperties" :key="p.id" :value="p.id">{{ p.name }}</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label text-[10px]">Listing Type</label>
+            <select v-model="createForm.listingType" required class="form-select text-xs">
+              <option value="rent">Long-term rent</option>
+              <option value="sale">Outright sale</option>
+              <option value="short_stay">Short stay booking</option>
+              <option value="event_hourly">Hourly event venue</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2">
+          <button @click="showCreateModal = false" class="px-4 py-2 border border-slate-200 text-slate-600 font-bold rounded-lg text-xs hover:bg-slate-50">Cancel</button>
+          <button @click="submitCreateListing" :disabled="!createForm.propertyId || !createForm.listingType" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-xs shadow-sm">Create Draft</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
-import { ref, computed, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted } from 'vue';
 import { useAppStore } from '@/stores/store';
 
 export default {
@@ -196,14 +228,22 @@ export default {
     const unpublishReason = ref('');
     const targetListing = ref(null);
 
-    const isLandlord = computed(() => store.userRole === 'landlord');
+    const showCreateModal = ref(false);
+    const createForm = reactive({
+      propertyId: '',
+      listingType: 'rent'
+    });
+
+    const isLandlord = computed(() => ['landlord', 'agent', 'staff', 'caretaker'].includes(store.userRole));
     const isSupport = computed(() => store.userRole === 'support_admin' || store.userRole === 'superadmin');
+
+    const myProperties = computed(() => store.properties || []);
 
     const filteredListings = computed(() => {
       const list = store.listings || [];
       if (isLandlord.value) {
-        // Landlord only sees their own listings
-        return list.filter(l => l.landlord_id === store.user?.id);
+        const propIDs = myProperties.value.map(p => p.id);
+        return list.filter(l => l.landlord_id === store.user?.id || propIDs.includes(l.property_id));
       }
       return list;
     });
@@ -218,21 +258,36 @@ export default {
     };
 
     const createNewListing = () => {
-      // Direct router navigation or state set
-      store.apiRequest('/api/listings/create', 'POST', {
-        title: 'New Advertised Listing',
-        description: 'Provide details about bedrooms, bathrooms, and features.',
-        base_rent: 15000,
-        rent_amount: 15000,
-        status: 'draft'
-      }).then((res) => {
-        store.listings.push(res);
+      createForm.propertyId = myProperties.value.length > 0 ? myProperties.value[0].id : '';
+      createForm.listingType = 'rent';
+      showCreateModal.value = true;
+    };
+
+    const submitCreateListing = async () => {
+      if (!createForm.propertyId || !createForm.listingType) return;
+      try {
+        const res = await store.apiRequest('/api/listings/create', 'POST', {
+          property_id: createForm.propertyId,
+          listing_type: createForm.listingType,
+          title: 'New Advertised Listing',
+          description: 'Provide details about bedrooms, bathrooms, and features.',
+          base_rent: 15000,
+          rent_amount: 15000,
+          status: 'draft'
+        });
+        if (store.listings) {
+          store.listings.push(res);
+        } else {
+          store.listings = [res];
+        }
         store.success = 'Draft listing created!';
-      });
+        showCreateModal.value = false;
+      } catch (err) {
+        store.error = err.message || 'Failed to create listing';
+      }
     };
 
     const editListing = (listing) => {
-      // Mock simple local editing or swap tab
       const newTitle = prompt('Enter new listing title:', listing.title);
       if (newTitle) {
         store.apiRequest('/api/listings/update', 'POST', {
@@ -265,6 +320,11 @@ export default {
       }
     };
 
+    onMounted(async () => {
+      await store.fetchProperties();
+      await store.fetchListings();
+    });
+
     return {
       store,
       isLandlord,
@@ -277,7 +337,11 @@ export default {
       promptUnpublish,
       showUnpublishModal,
       unpublishReason,
-      submitUnpublish
+      submitUnpublish,
+      showCreateModal,
+      createForm,
+      myProperties,
+      submitCreateListing
     };
   }
 };

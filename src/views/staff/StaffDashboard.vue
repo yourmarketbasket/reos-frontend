@@ -8,6 +8,10 @@
         </span>
         <h1 class="text-2xl font-bold text-slate-900 font-heading">Field Representative Dashboard</h1>
         <p class="text-sm text-slate-500 mt-0.5">Manage assigned leads, schedule property viewings, and review monthly conversion stats.</p>
+        <p v-if="stats?.principal_name" class="text-xs text-indigo-600 font-semibold mt-1.5 flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+          Assigned Principal: <span class="capitalize font-extrabold text-slate-800">{{ stats.principal_type }}</span> ({{ stats.principal_name }})
+        </p>
       </div>
       <div>
         <span class="text-xs text-slate-400 font-semibold font-mono">Staff Console</span>

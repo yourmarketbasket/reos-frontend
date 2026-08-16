@@ -251,8 +251,7 @@ export default {
 
     // Platform admins don't need a property for admin-role invites
     const requiresProperty = computed(() => {
-      const adminOnly = ['technical_admin', 'support_admin', 'billing_admin'];
-      return !adminOnly.includes(form.role);
+      return form.role === 'tenant';
     });
 
     watch(() => allowedRoles.value, (roles) => {
