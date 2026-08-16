@@ -336,7 +336,7 @@
         </div>
 
         <!-- Row 2: System Status -->
-        <div class="w-full flex items-center" :class="[sidebarCollapsed ? 'justify-center' : 'gap-2 px-1 text-[10px] font-semibold text-slate-400']">
+        <div class="w-full flex items-center justify-center gap-2 px-1 text-[10px] font-semibold text-slate-400">
           <span :class="['w-2 h-2 rounded-full flex-shrink-0', store.redis_status === 'connected' ? 'bg-emerald-500 animate-pulse' : 'bg-red-500']" :title="sidebarCollapsed ? `System: ${store.redis_status === 'connected' ? 'Online' : 'Offline'}` : ''"></span>
           <span v-if="!sidebarCollapsed" class="text-slate-400">System: {{ store.redis_status === 'connected' ? 'Online' : 'Offline' }}</span>
         </div>
