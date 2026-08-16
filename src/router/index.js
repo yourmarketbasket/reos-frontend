@@ -4,6 +4,7 @@ import Login from '@/views/Login.vue';
 import InviteAccept from '@/views/InviteAccept.vue';
 import Landing from '@/views/Landing.vue';
 import VerifyOTP from '@/views/VerifyOTP.vue';
+import Browse from '@/views/Browse.vue';
 import AdminAuth from '@/views/AdminAuth.vue';
 import SuperadminAuth from '@/views/SuperadminAuth.vue';
 
@@ -32,6 +33,11 @@ const routes = [
     path: '/',
     name: 'landing',
     component: Landing
+  },
+  {
+    path: '/browse',
+    name: 'browse',
+    component: Browse
   },
   {
     path: '/login',
@@ -183,6 +189,28 @@ const router = createRouter({
   routes
 });
 
+// Mappings of authenticated routes to roles authorized to access them
+const routeRolePermissions = {
+  '/dashboard': ['superadmin', 'technical_admin', 'support_admin', 'billing_admin', 'landlord', 'agent', 'caretaker', 'client', 'tenant', 'staff'],
+  '/profile': ['superadmin', 'technical_admin', 'support_admin', 'billing_admin', 'landlord', 'agent', 'caretaker', 'client', 'tenant', 'staff'],
+  '/notifications': ['superadmin', 'technical_admin', 'support_admin', 'billing_admin', 'landlord', 'agent', 'caretaker', 'client', 'tenant', 'staff'],
+  '/disputes': ['superadmin', 'support_admin', 'billing_admin', 'landlord', 'client', 'tenant'],
+  '/properties': ['landlord', 'agent', 'staff', 'superadmin'],
+  '/search': ['client', 'tenant'],
+  '/listings': ['landlord', 'agent'],
+  '/applications': ['landlord', 'agent', 'client', 'tenant'],
+  '/leases': ['landlord', 'agent', 'client', 'tenant'],
+  '/ledger': ['landlord', 'billing_admin', 'client', 'tenant', 'superadmin'],
+  '/invites': ['superadmin', 'landlord'],
+  '/tiers': ['superadmin', 'landlord'],
+  '/property-approvals': ['superadmin'],
+  '/regions': ['superadmin'],
+  '/commission-rules': ['superadmin', 'landlord'],
+  '/gateways': ['superadmin', 'billing_admin'],
+  '/users': ['superadmin', 'support_admin'],
+  '/sms': ['superadmin', 'technical_admin']
+};
+
 router.beforeEach(async (to, from, next) => {
   const store = useAppStore();
 
@@ -196,13 +224,33 @@ router.beforeEach(async (to, from, next) => {
   }
 
   const authenticated = store.isAuthenticated;
+  const userRole = store.user?.role || '';
 
-  if (to.meta.requiresAuth && !authenticated) {
-    next('/login');
-  } else if (to.meta.requiresGuest && authenticated) {
-    next('/dashboard');
+  if (authenticated) {
+    // Logged-in users should not navigate outside the dashboard zone
+    if (to.meta.requiresAuth) {
+      // Verify role-based routing permissions
+      const allowedRoles = routeRolePermissions[to.path];
+      if (allowedRoles && !allowedRoles.includes(userRole)) {
+        next('/dashboard');
+      } else {
+        next();
+      }
+    } else {
+      // Special exceptions: invite flow. Otherwise force back to dashboard.
+      if (to.path === '/invite/accept') {
+        next();
+      } else {
+        next('/dashboard');
+      }
+    }
   } else {
-    next();
+    // Guests can only navigate to non-authenticated pages
+    if (to.meta.requiresAuth) {
+      next('/login');
+    } else {
+      next();
+    }
   }
 });
 

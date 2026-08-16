@@ -62,7 +62,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                   </svg>
                   <span>{{ uploadLoading ? 'Uploading...' : 'Upload Image File' }}</span>
-                  <input type="file" accept="image/*" class="hidden" @change="handleAvatarUpload" :disabled="uploadLoading" />
+                  <input type="file" accept="image/*" class="hidden" @change="openCropper" :disabled="uploadLoading" />
                 </label>
                 <span class="text-[10px] text-slate-400">or choose from presets:</span>
               </div>
@@ -116,24 +116,24 @@
               </div>
             </div>
 
-            <!-- Jurisdiction Coverage Map for Landlords & Agents (not clients/tenants/staff/caretakers) -->
-            <div v-if="showJurisdictionMap" class="space-y-3 pt-2">
-              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Jurisdiction Coverage & Points</label>
+            <!-- Primary Location Pin Map -->
+            <div class="space-y-3 pt-2">
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Primary Location Pin (Jurisdiction Map)</label>
               <p class="text-[10px] text-slate-500 leading-normal">
-                Click on the map below to select points showing your coverage area and jurisdictions. These coordinates will be stored as your primary coverage zone.
+                Click on the map below to drop a pin on your primary operating location.
               </p>
               
               <div id="map" class="h-64 w-full rounded-xl border border-slate-200 shadow-inner z-0"></div>
               
               <div class="flex items-center justify-between gap-4">
-                <span class="text-[10px] text-slate-500 font-semibold">{{ generalForm.coveragePoints.length }} points selected</span>
+                <span class="text-[10px] text-slate-500 font-semibold">Location Pin: {{ generalForm.jurisdiction || 'N/A' }}</span>
                 <button 
                   type="button" 
                   @click="clearCoveragePoints" 
-                  :disabled="generalForm.coveragePoints.length === 0"
+                  :disabled="!generalForm.jurisdiction"
                   class="text-[10px] font-bold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100/50 border border-red-200 px-2 py-1 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Clear Map Points
+                  Clear Location Pin
                 </button>
               </div>
             </div>
@@ -504,6 +504,93 @@
 
       </div>
     </div>
+
+    <!-- HTML5 Canvas Image Cropper Modal -->
+    <div v-if="showCropper" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-xl max-w-lg w-full overflow-hidden flex flex-col">
+        <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+          <span class="font-heading text-sm font-bold text-slate-800">Crop Avatar Image</span>
+          <button @click="showCropper = false" class="text-slate-400 hover:text-slate-600 font-bold text-lg">&times;</button>
+        </div>
+        
+        <div class="p-6 space-y-4 flex-1 flex flex-col items-center">
+          <p class="text-[11px] text-slate-500 text-center">Drag the image to position, zoom, and select aspect ratio before saving</p>
+          
+          <!-- Viewport container -->
+          <div 
+            class="relative w-72 h-72 border border-dashed border-slate-300 bg-slate-100 overflow-hidden cursor-move select-none flex items-center justify-center rounded-lg"
+            @mousedown="startPan"
+            @mousemove="doPan"
+            @mouseup="endPan"
+            @mouseleave="endPan"
+            @touchstart="startPanTouch"
+            @touchmove="doPanTouch"
+            @touchend="endPan"
+          >
+            <!-- Viewport crop frame indicator -->
+            <div 
+              :style="cropFrameStyle"
+              class="absolute border-2 border-blue-500 shadow-[0_0_0_9999px_rgba(15,23,42,0.4)] pointer-events-none z-10"
+            ></div>
+            
+            <!-- Draggable Image -->
+            <img 
+              ref="cropperImg"
+              :src="cropperImageSrc"
+              :style="cropperImgStyle"
+              class="max-w-none origin-center pointer-events-none"
+            />
+          </div>
+
+          <!-- Aspect Ratios Selector -->
+          <div class="w-full space-y-1.5">
+            <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider text-center">Aspect Ratio</span>
+            <div class="flex gap-2 justify-center">
+              <button 
+                v-for="ratio in aspectRatios" 
+                :key="ratio.value"
+                @click="selectedAspectRatio = ratio.value"
+                :class="['text-[10px] font-bold px-2.5 py-1 border rounded-lg transition-all', selectedAspectRatio === ratio.value ? 'bg-blue-50 text-blue-600 border-blue-300' : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50']"
+              >
+                {{ ratio.label }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Zoom Slider -->
+          <div class="w-full space-y-1">
+            <div class="flex justify-between text-[10px] text-slate-400 font-bold uppercase tracking-wider px-1">
+              <span>Zoom</span>
+              <span>{{ (cropperZoom * 100).toFixed(0) }}%</span>
+            </div>
+            <input 
+              v-model.number="cropperZoom" 
+              type="range" 
+              min="0.5" 
+              max="4.0" 
+              step="0.05" 
+              class="w-full accent-blue-600 h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer" 
+            />
+          </div>
+        </div>
+
+        <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
+          <button 
+            @click="showCropper = false" 
+            class="px-4 py-2 border border-slate-200 text-slate-600 font-semibold rounded-lg text-xs hover:bg-slate-100 transition-colors"
+          >
+            Cancel
+          </button>
+          <button 
+            @click="cropAndUpload" 
+            :disabled="uploadLoading"
+            class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg text-xs transition-colors"
+          >
+            {{ uploadLoading ? 'Uploading...' : 'Crop & Save' }}
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -603,7 +690,7 @@ export default {
     const user = computed(() => store.user || {});
     const userRole = computed(() => store.userRole);
     const userRecoveryPhrase = computed(() => store.user?.recovery_phrase);
-    const showJurisdictionMap = computed(() => JURISDICTION_ROLES.includes(userRole.value));
+    const showJurisdictionMap = computed(() => true);
 
     const tabItems = [
       { id: 'general', name: 'Profile Info', icon: UserIcon },
@@ -639,6 +726,189 @@ export default {
 
     const showNewPassword = ref(false);
     const showConfirmPassword = ref(false);
+
+    // Image Cropper States
+    const showCropper = ref(false);
+    const cropperImageSrc = ref('');
+    const cropperZoom = ref(1.0);
+    const cropperPanX = ref(0);
+    const cropperPanY = ref(0);
+    const selectedAspectRatio = ref(1.0);
+    const cropperFile = ref(null);
+
+    const aspectRatios = [
+      { label: '1:1 Square', value: 1.0 },
+      { label: '4:3 Standard', value: 4/3 },
+      { label: '16:9 Video', value: 16/9 },
+      { label: 'Free', value: 'free' }
+    ];
+
+    const cropFrameStyle = computed(() => {
+      const ratio = selectedAspectRatio.value;
+      if (ratio === 'free') {
+        return {
+          width: '240px',
+          height: '240px',
+          borderRadius: '8px'
+        };
+      }
+      if (ratio === 1.0) {
+        return {
+          width: '240px',
+          height: '240px',
+          borderRadius: '50%'
+        };
+      }
+      const maxW = 260;
+      if (ratio > 1) {
+        return {
+          width: `${maxW}px`,
+          height: `${Math.round(maxW / ratio)}px`,
+          borderRadius: '8px'
+        };
+      } else {
+        const maxH = 260;
+        return {
+          width: `${Math.round(maxH * ratio)}px`,
+          height: `${maxH}px`,
+          borderRadius: '8px'
+        };
+      }
+    });
+
+    const cropperImgStyle = computed(() => {
+      return {
+        transform: `translate(${cropperPanX.value}px, ${cropperPanY.value}px) scale(${cropperZoom.value})`
+      };
+    });
+
+    let dragStartX = 0;
+    let dragStartY = 0;
+    let isDragging = false;
+
+    const startPan = (e) => {
+      isDragging = true;
+      dragStartX = e.clientX - cropperPanX.value;
+      dragStartY = e.clientY - cropperPanY.value;
+    };
+
+    const doPan = (e) => {
+      if (!isDragging) return;
+      cropperPanX.value = e.clientX - dragStartX;
+      cropperPanY.value = e.clientY - dragStartY;
+    };
+
+    const endPan = () => {
+      isDragging = false;
+    };
+
+    const startPanTouch = (e) => {
+      if (e.touches.length === 0) return;
+      isDragging = true;
+      dragStartX = e.touches[0].clientX - cropperPanX.value;
+      dragStartY = e.touches[0].clientY - cropperPanY.value;
+    };
+
+    const doPanTouch = (e) => {
+      if (!isDragging || e.touches.length === 0) return;
+      cropperPanX.value = e.touches[0].clientX - dragStartX;
+      cropperPanY.value = e.touches[0].clientY - dragStartY;
+    };
+
+    const openCropper = (event) => {
+      const file = event.target.files[0];
+      if (!file) return;
+      cropperFile.value = file;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        cropperImageSrc.value = e.target.result;
+        cropperZoom.value = 1.0;
+        cropperPanX.value = 0;
+        cropperPanY.value = 0;
+        showCropper.value = true;
+      };
+      reader.readAsDataURL(file);
+    };
+
+    const cropAndUpload = async () => {
+      try {
+        uploadLoading.value = true;
+        showCropper.value = false;
+
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+
+        let cropW = 400;
+        let cropH = 400;
+        if (selectedAspectRatio.value !== 'free') {
+          cropH = Math.round(cropW / selectedAspectRatio.value);
+        }
+
+        canvas.width = cropW;
+        canvas.height = cropH;
+
+        const img = new Image();
+        img.src = cropperImageSrc.value;
+        await new Promise((resolve) => { img.onload = resolve; });
+
+        const viewportSize = 288;
+        const frameW = parseFloat(cropFrameStyle.value.width);
+        const frameH = parseFloat(cropFrameStyle.value.height);
+
+        const imgNaturalW = img.naturalWidth || img.width;
+        const imgNaturalH = img.naturalHeight || img.height;
+
+        const fitScale = Math.min(viewportSize / imgNaturalW, viewportSize / imgNaturalH);
+        const fittedW = imgNaturalW * fitScale;
+
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, cropW, cropH);
+
+        const renderScale = (fittedW * cropperZoom.value) / imgNaturalW;
+        
+        const sWidth = cropW / renderScale;
+        const sHeight = cropH / renderScale;
+
+        const dx = (viewportSize - frameW) / 2;
+        const dy = (viewportSize - frameH) / 2;
+
+        const sx = ((viewportSize / 2) - cropperPanX.value - dx) / renderScale - (sWidth / 2);
+        const sy = ((viewportSize / 2) - cropperPanY.value - dy) / renderScale - (sHeight / 2);
+
+        ctx.drawImage(
+          img,
+          sx, sy, sWidth, sHeight,
+          0, 0, cropW, cropH
+        );
+
+        canvas.toBlob(async (blob) => {
+          if (!blob) {
+            uploadLoading.value = false;
+            return;
+          }
+          const croppedFile = new File([blob], cropperFile.value.name, {
+            type: 'image/jpeg',
+            lastModified: Date.now()
+          });
+
+          const downloadUrl = await store.uploadImage(croppedFile);
+          if (downloadUrl) {
+            profileImage.value = downloadUrl;
+            if (!profileImages.value.includes(downloadUrl)) {
+              profileImages.value.push(downloadUrl);
+            }
+            store.success = 'Cropped profile avatar uploaded locally! Click "Save General Info" to commit to the server.';
+          }
+          uploadLoading.value = false;
+        }, 'image/jpeg', 0.9);
+
+      } catch (err) {
+        console.error(err);
+        store.error = err.message || 'Avatar cropping and upload failed';
+        uploadLoading.value = false;
+      }
+    };
 
     // Active session tracking linked to backend session array
     const activeSessions = computed(() => {
@@ -700,7 +970,15 @@ export default {
       }
 
       const defaultCenter = [-1.2921, 36.8219];
-      const initialCenter = generalForm.coveragePoints.length > 0 ? generalForm.coveragePoints[0] : defaultCenter;
+      let initialCenter = defaultCenter;
+      if (generalForm.jurisdiction) {
+        try {
+          const parsed = JSON.parse(generalForm.jurisdiction);
+          if (Array.isArray(parsed) && parsed.length === 2) {
+            initialCenter = parsed;
+          }
+        } catch (err) {}
+      }
 
       mapInstance = L.map('map').setView(initialCenter, 12);
 
@@ -710,21 +988,28 @@ export default {
 
       markersLayer = L.layerGroup().addTo(mapInstance);
 
-      generalForm.coveragePoints.forEach(pt => {
-        L.marker(pt).addTo(markersLayer);
-      });
+      if (generalForm.jurisdiction) {
+        try {
+          const parsed = JSON.parse(generalForm.jurisdiction);
+          if (Array.isArray(parsed) && parsed.length === 2) {
+            L.marker(parsed).addTo(markersLayer);
+          }
+        } catch (err) {}
+      }
 
       mapInstance.on('click', (e) => {
         const lat = parseFloat(e.latlng.lat.toFixed(6));
         const lng = parseFloat(e.latlng.lng.toFixed(6));
-        const pt = [lat, lng];
-        generalForm.coveragePoints.push(pt);
-        L.marker(pt).addTo(markersLayer);
+        generalForm.jurisdiction = `[${lat},${lng}]`;
+        if (markersLayer) {
+          markersLayer.clearLayers();
+        }
+        L.marker([lat, lng]).addTo(markersLayer);
       });
     };
 
     const clearCoveragePoints = () => {
-      generalForm.coveragePoints = [];
+      generalForm.jurisdiction = '';
       if (markersLayer) {
         markersLayer.clearLayers();
       }
@@ -739,19 +1024,7 @@ export default {
       generalForm.email = store.user.email || '';
       generalForm.phone = store.user.phone || '';
       generalForm.jurisdiction = store.user.jurisdiction || '';
-
-      let parsedPoints = [];
-      if (store.user.jurisdiction) {
-        try {
-          const parsed = JSON.parse(store.user.jurisdiction);
-          if (Array.isArray(parsed)) {
-            parsedPoints = parsed;
-          }
-        } catch (err) {
-          console.warn('Could not parse user jurisdiction as coordinate points array:', err);
-        }
-      }
-      generalForm.coveragePoints = parsedPoints;
+      generalForm.coveragePoints = [];
 
       paymentForm.bankName = store.user.bank_name || '';
       paymentForm.bankAccount = store.user.bank_account || '';
@@ -837,10 +1110,9 @@ export default {
     const saveGeneralInfo = async () => {
       try {
         loading.value = true;
-        const jurisdictionVal = showJurisdictionMap.value ? JSON.stringify(generalForm.coveragePoints) : '';
         await store.updateProfile({
           phone: generalForm.phone,
-          jurisdiction: jurisdictionVal,
+          jurisdiction: generalForm.jurisdiction,
           profile_image: profileImage.value,
           profile_images: profileImages.value
         });
@@ -1099,7 +1371,23 @@ export default {
       deletePasskey,
       terminateSession,
       terminateAllOtherSessions,
-      generateNewRecoveryPhrase
+      generateNewRecoveryPhrase,
+      showCropper,
+      cropperImageSrc,
+      cropperZoom,
+      cropperPanX,
+      cropperPanY,
+      selectedAspectRatio,
+      aspectRatios,
+      cropFrameStyle,
+      cropperImgStyle,
+      openCropper,
+      cropAndUpload,
+      startPan,
+      doPan,
+      endPan,
+      startPanTouch,
+      doPanTouch
     };
   }
 };

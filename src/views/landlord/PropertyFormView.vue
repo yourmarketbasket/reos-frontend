@@ -66,6 +66,10 @@
               <option value="land">Land Plot</option>
               <option value="holiday_home">Holiday Home</option>
               <option value="hostel">Student Hostel</option>
+              <option value="studio_media">Media Studio (Podcast / Filming)</option>
+              <option value="garden">Garden / Outdoor Space</option>
+              <option value="coworking">Coworking Space</option>
+              <option value="event_space">Event Space</option>
             </select>
           </div>
           <div>
