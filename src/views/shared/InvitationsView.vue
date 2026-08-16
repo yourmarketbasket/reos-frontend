@@ -120,6 +120,53 @@
       </div>
     </div>
 
+    <!-- Active Team Performance Tracker -->
+    <div class="bg-white border border-slate-100 rounded-2xl shadow-sm p-6 space-y-4">
+      <div>
+        <h2 class="text-base font-bold text-slate-800 font-heading">Active Team Performance</h2>
+        <p class="text-xs text-slate-500 mt-0.5">Real-time stats tracking assigned clients, walkthroughs, listed inventory, and commissions.</p>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-xs text-left">
+          <thead>
+            <tr class="bg-slate-50 border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider text-[10px]">
+              <th class="py-3 px-4">Member Email</th>
+              <th class="py-3 px-4">Role</th>
+              <th class="py-3 px-4 text-center">Assigned Leads</th>
+              <th class="py-3 px-4 text-center">Walkthroughs</th>
+              <th class="py-3 px-4 text-center">Deals Closed</th>
+              <th class="py-3 px-4 text-center">Properties Added</th>
+              <th class="py-3 px-4 text-right">Commissions Paid</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <tr v-for="member in teamList" :key="member.id" class="hover:bg-slate-50/50 transition-colors">
+              <td class="py-3 px-4">
+                <div class="font-semibold text-slate-700">{{ member.email || member.staff_user_id }}</div>
+                <div class="text-[9px] text-slate-400 mt-0.5">ID: {{ member.staff_user_id }}</div>
+              </td>
+              <td class="py-3 px-4">
+                <span class="text-[9px] font-bold px-2 py-0.5 rounded-full border bg-indigo-50 border-indigo-200 text-indigo-700 capitalize">
+                  {{ member.principal_type }} ({{ member.status }})
+                </span>
+              </td>
+              <td class="py-3 px-4 text-center font-bold text-slate-600">{{ member.leads_count }}</td>
+              <td class="py-3 px-4 text-center font-bold text-slate-600">{{ member.viewings_count }}</td>
+              <td class="py-3 px-4 text-center font-bold text-emerald-600">{{ member.deals_closed }}</td>
+              <td class="py-3 px-4 text-center font-bold text-slate-600">{{ member.properties_count }}</td>
+              <td class="py-3 px-4 text-right font-bold text-slate-800">KES {{ member.total_earnings.toLocaleString() }}</td>
+            </tr>
+            <tr v-if="teamList.length === 0">
+              <td colspan="7" class="text-center py-12 text-slate-400">
+                No active team members recorded.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
     <!-- Send Invitation Modal -->
     <Teleport to="body">
       <div v-if="showModal" class="modal-overlay">
@@ -379,17 +426,20 @@ export default {
     onMounted(async () => {
       await store.fetchProperties();
       await store.fetchAllInvitations();
+      await store.fetchTeam();
     });
 
+    const teamList = computed(() => store.team || []);
 
     // --- Pagination ---
     const { paginatedItems: pagedFilteredInvitations, currentPage, totalPages, totalItems, startItem, endItem, pageNumbers, pageSize, prevPage, nextPage, goToPage } = usePagination(filteredInvitations);
-        return {
+    return {
       showModal, formLoading, formError, actionLoading, revokeTarget,
       activeFilter, search, form,
       filters, stats, filteredInvitations, properties, allowedRoles, requiresProperty,
       getPropertyName, roleChip, statusChip, formatDate, isExpiringSoon,
-      copyLink, closeModal, submitInvite, confirmRevoke, handleRevoke, handleResend, pagedFilteredInvitations, currentPage, totalPages, totalItems, startItem, endItem, pageNumbers, pageSize, prevPage, nextPage, goToPage
+      copyLink, closeModal, submitInvite, confirmRevoke, handleRevoke, handleResend, pagedFilteredInvitations, currentPage, totalPages, totalItems, startItem, endItem, pageNumbers, pageSize, prevPage, nextPage, goToPage,
+      teamList
     };
   }
 };

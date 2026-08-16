@@ -914,6 +914,9 @@ export const useAppStore = defineStore('app', {
                 }
               }
             }
+          } else if (wsMsg.type === 'property_sync') {
+            console.log('Received property sync request, reloading lists...');
+            this.fetchProperties();
           }
         } catch (err) {
           console.error('Failed to parse WebSocket message payload:', err);
