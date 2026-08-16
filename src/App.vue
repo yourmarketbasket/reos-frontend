@@ -43,14 +43,6 @@
             </svg>
           </button>
         </div>
-
-        <!-- User Role Badge (inline-flex elegant chip) -->
-        <div v-if="!sidebarCollapsed" class="flex justify-center">
-          <div :class="['inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider border', roleChipClass]">
-            <svg class="w-3 h-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" v-html="roleIconSvg"></svg>
-            <span class="truncate">{{ userRole.replace(/_/g, ' ') }}</span>
-          </div>
-        </div>
       </div>
 
       <!-- Expand button when collapsed -->
