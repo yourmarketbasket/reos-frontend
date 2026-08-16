@@ -68,6 +68,12 @@
                   </span>
                 </td>
                 <td class="py-3.5 px-5 text-right space-x-2">
+                  <button v-if="prop.approval_status === 'pending' && canApprove" @click="handleApprove(prop.id)" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-2.5 py-1.5 rounded-lg text-[10px] transition-colors">
+                    Approve
+                  </button>
+                  <button v-if="prop.approval_status === 'pending' && canApprove" @click="handleReject(prop.id)" class="bg-red-500 hover:bg-red-600 text-white font-bold px-2.5 py-1.5 rounded-lg text-[10px] transition-colors">
+                    Reject
+                  </button>
                   <button @click="openEditProperty(prop.id)" class="border border-slate-200 hover:bg-slate-50 text-slate-600 font-semibold px-3 py-1.5 rounded-lg text-[10px]">
                     Edit Specs
                   </button>
@@ -404,13 +410,35 @@ export default {
     };
 
 
+    const userRole = computed(() => store.user?.role || '');
+    const canApprove = computed(() => ['landlord', 'agent'].includes(userRole.value));
+
+    const handleApprove = async (id) => {
+      try {
+        await store.approveProperty(id, 'Approved by team lead');
+        await store.fetchProperties();
+      } catch (err) {
+        store.error = err.message || 'Approval failed';
+      }
+    };
+
+    const handleReject = async (id) => {
+      try {
+        await store.rejectProperty(id, 'Rejected by team lead');
+        await store.fetchProperties();
+      } catch (err) {
+        store.error = err.message || 'Rejection failed';
+      }
+    };
+
     // --- Pagination ---
     const { paginatedItems: pagedProperties, currentPage, totalPages, totalItems, startItem, endItem, pageNumbers, pageSize, prevPage, nextPage, goToPage } = usePagination(properties);
-        return {
+    return {
       mode, selectedPropertyId, selectedProperty, showAddUnitModal, unitUploading, unitsList, properties, unitForm,
       approvedCount, pendingCount, totalUnitsCount,
       getCoverImage, getStatusClass, openAddProperty, openEditProperty, onPropertySaved, openManageUnits,
-      closeAddUnitModal, uploadUnitFiles, removeUnitImage, submitAddUnit, goBackFromForm, formatLocation, pagedProperties, currentPage, totalPages, totalItems, startItem, endItem, pageNumbers, pageSize, prevPage, nextPage, goToPage
+      closeAddUnitModal, uploadUnitFiles, removeUnitImage, submitAddUnit, goBackFromForm, formatLocation, pagedProperties, currentPage, totalPages, totalItems, startItem, endItem, pageNumbers, pageSize, prevPage, nextPage, goToPage,
+      canApprove, handleApprove, handleReject
     };
   }
 };
