@@ -27,6 +27,7 @@ import GatewaysView from '@/views/admin/GatewaysView.vue';
 import SystemUsersView from '@/views/admin/SystemUsersView.vue';
 import SMSFallbackView from '@/views/admin/SMSFallbackView.vue';
 import SearchBrowseView from '@/views/shared/SearchBrowseView.vue';
+import MaintenanceView from '@/views/shared/MaintenanceView.vue';
 
 const routes = [
   {
@@ -181,6 +182,42 @@ const routes = [
     name: 'sms',
     component: SMSFallbackView,
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/leads',
+    name: 'leads',
+    component: DashboardWrapper,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/viewings',
+    name: 'viewings',
+    component: DashboardWrapper,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/performance',
+    name: 'performance',
+    component: DashboardWrapper,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/inspections',
+    name: 'inspections',
+    component: DashboardWrapper,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/deductions',
+    name: 'deductions',
+    component: DashboardWrapper,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/maintenance',
+    name: 'maintenance',
+    component: DashboardWrapper,
+    meta: { requiresAuth: true }
   }
 ];
 
@@ -200,15 +237,21 @@ const routeRolePermissions = {
   '/listings': ['landlord', 'agent'],
   '/applications': ['landlord', 'agent', 'client', 'tenant'],
   '/leases': ['landlord', 'agent', 'client', 'tenant'],
-  '/ledger': ['landlord', 'billing_admin', 'client', 'tenant', 'superadmin'],
-  '/invites': ['superadmin', 'landlord'],
-  '/tiers': ['superadmin', 'landlord'],
+  '/ledger': ['landlord', 'billing_admin', 'client', 'tenant', 'superadmin', 'staff', 'agent'],
+  '/invites': ['superadmin', 'landlord', 'agent'],
+  '/tiers': ['superadmin', 'landlord', 'agent'],
   '/property-approvals': ['superadmin'],
   '/regions': ['superadmin'],
-  '/commission-rules': ['superadmin', 'landlord'],
+  '/commission-rules': ['superadmin', 'landlord', 'agent'],
   '/gateways': ['superadmin', 'billing_admin'],
   '/users': ['superadmin', 'support_admin'],
-  '/sms': ['superadmin', 'technical_admin']
+  '/sms': ['superadmin', 'technical_admin'],
+  '/leads': ['staff', 'agent'],
+  '/viewings': ['staff', 'agent'],
+  '/performance': ['staff'],
+  '/inspections': ['caretaker'],
+  '/deductions': ['caretaker'],
+  '/maintenance': ['superadmin', 'landlord', 'agent', 'caretaker', 'tenant', 'client', 'staff']
 };
 
 router.beforeEach(async (to, from, next) => {

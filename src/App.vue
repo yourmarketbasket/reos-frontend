@@ -533,6 +533,12 @@ export default {
       if (p === '/users') return 'users';
       if (p === '/sms') return 'sms';
       if (p === '/search') return 'search';
+      if (p === '/leads') return 'leads';
+      if (p === '/viewings') return 'viewings';
+      if (p === '/performance') return 'performance';
+      if (p === '/inspections') return 'inspections';
+      if (p === '/deductions') return 'deductions';
+      if (p === '/maintenance') return 'maintenance';
       return '';
     });
 
@@ -651,7 +657,13 @@ export default {
         gateways: '/gateways',
         users: '/users',
         sms: '/sms',
-        search: '/search'
+        search: '/search',
+        leads: '/leads',
+        viewings: '/viewings',
+        performance: '/performance',
+        inspections: '/inspections',
+        deductions: '/deductions',
+        maintenance: '/maintenance'
       };
       const path = paths[tab] || '/dashboard';
       router.push(path);

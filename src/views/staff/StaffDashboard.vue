@@ -213,13 +213,30 @@
 
 <script>
 import { ref, reactive, computed, onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { useAppStore } from '@/stores/store';
 
 export default {
   name: 'StaffDashboard',
   setup() {
     const store = useAppStore();
-    const activeTab = ref('leads');
+    const route = useRoute();
+    const router = useRouter();
+
+    const activeTab = computed({
+      get() {
+        const path = route.path;
+        if (path === '/viewings') return 'viewings';
+        if (path === '/performance') return 'performance';
+        return 'leads';
+      },
+      set(val) {
+        if (val === 'viewings') router.push('/viewings');
+        else if (val === 'performance') router.push('/performance');
+        else router.push('/leads');
+      }
+    });
+
     const showViewingModal = ref(false);
     const selectedLead = ref(null);
     const submitting = ref(false);

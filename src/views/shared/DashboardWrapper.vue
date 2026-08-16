@@ -1,8 +1,10 @@
 <template>
   <div class="w-full">
-    <LandlordDashboard v-if="userRole === 'landlord'" />
+    <!-- Handle caretaker maintenance routing internally, other roles use MaintenanceView component -->
+    <CaretakerDashboard v-if="userRole === 'caretaker'" />
+    <MaintenanceView v-else-if="isMaintenancePath" />
+    <LandlordDashboard v-else-if="userRole === 'landlord'" />
     <TenantDashboard v-else-if="userRole === 'client' || userRole === 'tenant'" />
-    <CaretakerDashboard v-else-if="userRole === 'caretaker'" />
     <AgentDashboard v-else-if="userRole === 'agent'" />
     <AdminDashboard v-else-if="userRole === 'superadmin'" />
     <TechAdminDashboard v-else-if="userRole === 'technical_admin'" />
@@ -17,6 +19,7 @@
 
 <script>
 import { computed } from 'vue';
+import { useRoute } from 'vue-router';
 import { useAppStore } from '@/stores/store';
 import LandlordDashboard from '@/views/landlord/LandlordDashboard.vue';
 import TenantDashboard from '@/views/tenant/TenantDashboard.vue';
@@ -27,17 +30,22 @@ import TechAdminDashboard from '@/views/admin/TechAdminDashboard.vue';
 import SupportAdminDashboard from '@/views/admin/SupportAdminDashboard.vue';
 import BillingAdminDashboard from '@/views/admin/BillingAdminDashboard.vue';
 import StaffDashboard from '@/views/staff/StaffDashboard.vue';
+import MaintenanceView from '@/views/shared/MaintenanceView.vue';
 
 export default {
   name: 'DashboardWrapper',
   components: {
     LandlordDashboard, TenantDashboard, CaretakerDashboard, AgentDashboard,
-    AdminDashboard, TechAdminDashboard, SupportAdminDashboard, BillingAdminDashboard, StaffDashboard
+    AdminDashboard, TechAdminDashboard, SupportAdminDashboard, BillingAdminDashboard,
+    StaffDashboard, MaintenanceView
   },
   setup() {
     const store = useAppStore();
+    const route = useRoute();
     const userRole = computed(() => store.user?.role || '');
-    return { userRole };
+    const isMaintenancePath = computed(() => route.path === '/maintenance');
+
+    return { userRole, isMaintenancePath };
   }
 };
 </script>

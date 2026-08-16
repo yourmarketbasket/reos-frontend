@@ -403,13 +403,29 @@
 <script>
 import { usePagination } from '@/composables/usePagination';
 import { ref, reactive, computed, onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { useAppStore } from '@/stores/store';
 
 export default {
   name: 'CaretakerDashboard',
   setup() {
     const store = useAppStore();
-    const activeTab = ref('maintenance');
+    const route = useRoute();
+    const router = useRouter();
+
+    const activeTab = computed({
+      get() {
+        const path = route.path;
+        if (path === '/inspections') return 'inspections';
+        if (path === '/deductions') return 'deductions';
+        return 'maintenance';
+      },
+      set(val) {
+        if (val === 'inspections') router.push('/inspections');
+        else if (val === 'deductions') router.push('/deductions');
+        else router.push('/maintenance');
+      }
+    });
     const showUpdateModal = ref(false);
     const showInspectionModal = ref(false);
     const showDeductionModal = ref(false);
