@@ -873,8 +873,12 @@ export const useAppStore = defineStore('app', {
         return;
       }
 
-      const host = window.location.hostname;
-      const wsUrl = `ws://${host}:8080/api/ws?token=${this.token}`;
+      // Use deployed Nisoko backend for WebSocket
+      const isProd = typeof __API_BASE_URL__ !== 'undefined' && __API_BASE_URL__.startsWith('https');
+      const wsBase = isProd
+        ? __API_BASE_URL__.replace('https://', 'wss://').replace('http://', 'ws://')
+        : `ws://${window.location.hostname}:8080`;
+      const wsUrl = `${wsBase}/api/ws?token=${this.token}`;
       console.log(`Connecting to WebSocket at: ${wsUrl}...`);
 
       const socket = new WebSocket(wsUrl);
