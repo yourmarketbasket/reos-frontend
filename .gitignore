@@ -1,0 +1,78 @@
+# ##############################################################################
+# REOS - Web Gitignore (Vue/Vite Project)
+# ##############################################################################
+
+# Dependency directories
+node_modules/
+jspm_packages/
+web_modules/
+
+# Build and production distribution outputs
+/dist
+/build
+/out
+/.svelte-kit
+/.next
+/server/dist
+
+# Logs and debug files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+*.log
+
+# Environment variables and secrets
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+!.env.example
+
+# Diagnostic reports and tooling cache
+.eslintcache
+.stylelintcache
+.prettiercache
+.parcel-cache
+.cache/
+.vuepress/dist
+.serverless/
+.fusebox/
+.dynamodb/
+
+# Testing and Coverage
+/coverage
+/test-results/
+/cypress/screenshots/
+/cypress/videos/
+/cypress/downloads/
+/.nyc_output
+/playwright-report/
+/blob-report/
+/playwright/.local-browsers
+
+# Vite specific files
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
+
+# IDEs, Editors, and Workspace Configuration
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+*.swo
+*.sublime-project
+*.sublime-workspace
+
+# Operating System specific files
+.DS_Store
+.DS_Store?
+Thumbs.db
+ehthumbs.db
+[Dd]esktop.ini
+$RECYCLE.BIN/
