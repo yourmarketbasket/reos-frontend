@@ -43,11 +43,6 @@
             </svg>
           </button>
         </div>
-        <!-- Real-time System Status Dot -->
-        <div v-if="!sidebarCollapsed" class="flex items-center gap-2 px-1 text-[10px] font-semibold text-slate-400">
-          <span :class="['w-2 h-2 rounded-full', store.redis_status === 'connected' ? 'bg-emerald-500 animate-pulse' : 'bg-red-500']"></span>
-          System Status: {{ store.redis_status === 'connected' ? 'Online' : 'Offline' }}
-        </div>
 
         <!-- User Role Badge (inline-flex elegant chip) -->
         <div v-if="!sidebarCollapsed" class="flex justify-center">
@@ -324,13 +319,14 @@
         </div>
       </nav>
 
-      <!-- Sidebar footer: user info + logout -->
-      <div :class="['border-t border-brand-500/10 transition-all duration-300', sidebarCollapsed ? 'p-2 flex flex-col items-center gap-2' : 'p-3 flex items-center justify-between gap-3']">
-        <div class="flex items-center gap-2.5 min-w-0 flex-1">
+      <!-- Sidebar footer: user info + status + logout -->
+      <div :class="['border-t border-brand-500/10 transition-all duration-300 p-4 flex flex-col gap-3', sidebarCollapsed ? 'items-center' : '']">
+        <!-- Row 1: Name and Role -->
+        <div class="flex items-center gap-2.5 min-w-0 w-full">
           <div class="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 border border-brand-500/10">
             <img v-if="store.user?.profile_image" :src="store.user.profile_image" class="w-full h-full object-cover" alt="Avatar" />
-            <div v-else :class="['w-full h-full flex items-center justify-center font-bold text-xs uppercase bg-gradient-to-br', roleGradient]">
-              <span class="text-white">{{ userEmailPrefix }}</span>
+            <div v-else :class="['w-full h-full flex items-center justify-center font-bold text-xs uppercase bg-gradient-to-br text-white', roleGradient]">
+              <span>{{ userEmailPrefix }}</span>
             </div>
           </div>
           <div v-if="!sidebarCollapsed" class="min-w-0 flex-1">
@@ -338,11 +334,23 @@
             <p :class="['text-[9px] uppercase font-bold tracking-wider', roleAccentText]">{{ userRole.replace(/_/g, ' ') }}</p>
           </div>
         </div>
-        <button @click="handleLogout" :class="['flex items-center justify-center rounded-lg transition-colors text-slate-400 hover:text-red-600 hover:bg-red-500/5', sidebarCollapsed ? 'p-2' : 'p-1.5']" :title="sidebarCollapsed ? 'Log Out' : ''" aria-label="Log Out">
+
+        <!-- Row 2: System Status -->
+        <div class="w-full flex items-center" :class="[sidebarCollapsed ? 'justify-center' : 'gap-2 px-1 text-[10px] font-semibold text-slate-400']">
+          <span :class="['w-2 h-2 rounded-full flex-shrink-0', store.redis_status === 'connected' ? 'bg-emerald-500 animate-pulse' : 'bg-red-500']" :title="sidebarCollapsed ? `System: ${store.redis_status === 'connected' ? 'Online' : 'Offline'}` : ''"></span>
+          <span v-if="!sidebarCollapsed" class="text-slate-400">System: {{ store.redis_status === 'connected' ? 'Online' : 'Offline' }}</span>
+        </div>
+
+        <!-- Row 3: Logout Button -->
+        <button 
+          @click="handleLogout" 
+          :class="['w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl transition-all font-semibold text-xs text-slate-500 hover:text-red-650 hover:bg-red-500/5 border border-transparent hover:border-red-500/10', sidebarCollapsed ? 'p-2' : '']"
+          :title="sidebarCollapsed ? 'Log Out' : ''"
+        >
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
           </svg>
-          <span v-if="!sidebarCollapsed" class="text-xs ml-1.5 font-medium">Logout</span>
+          <span v-if="!sidebarCollapsed">Logout</span>
         </button>
       </div>
     </aside>
