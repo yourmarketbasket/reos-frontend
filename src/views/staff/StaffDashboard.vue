@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-6 animate-fade-in pb-12">
+  <div class="space-y-8 animate-fade-in pb-12">
     <!-- Header Banner -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
       <div>
@@ -7,7 +7,7 @@
           <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>Field Operations
         </span>
         <h1 class="text-2xl font-bold text-slate-900 font-heading">Field Representative Dashboard</h1>
-        <p class="text-sm text-slate-500 mt-0.5">Manage assigned leads, schedule property viewings, and review monthly conversion stats.</p>
+        <p class="text-xs text-slate-500 mt-0.5">Manage assigned leads, schedule property viewings, and review monthly conversion stats.</p>
         <p v-if="stats?.principal_name" class="text-xs text-indigo-600 font-semibold mt-1.5 flex items-center gap-1.5">
           <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
           Assigned Principal: <span class="capitalize font-extrabold text-slate-800">{{ stats.principal_type }}</span> ({{ stats.principal_name }})
@@ -18,238 +18,128 @@
       </div>
     </div>
 
-    <!-- Active Navigation Tabs -->
-    <div class="flex gap-2 border-b border-slate-200 pb-3">
-      <button 
-        v-for="tab in ['leads', 'viewings', 'performance']" 
-        :key="tab" 
-        @click="activeTab = tab"
-        :class="['text-xs font-bold px-4 py-2 rounded-xl transition-all capitalize', activeTab === tab ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-50']"
-      >
-        {{ tab === 'leads' ? 'Assigned Leads' : tab === 'viewings' ? 'Logged Viewings' : 'Performance & Vouchers' }}
-      </button>
-    </div>
-
-    <!-- 1. Assigned Leads Tab -->
-    <div v-if="activeTab === 'leads'" class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
-      <div>
-        <h2 class="font-bold text-slate-800 text-base">Client Leads Directory</h2>
-        <p class="text-xs text-slate-500">Respond to customer inquiries and schedule walk-through viewings.</p>
-      </div>
-
-      <div class="overflow-x-auto">
-        <table class="w-full text-xs text-left">
-          <thead>
-            <tr class="bg-slate-50 border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider text-[10px]">
-              <th class="py-2.5 px-4">Lead ID</th>
-              <th class="py-2.5 px-4">Listing Ref</th>
-              <th class="py-2.5 px-4">Source Channel</th>
-              <th class="py-2.5 px-4">Status</th>
-              <th class="py-2.5 px-4">Last Activity</th>
-              <th class="py-2.5 px-4 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-100">
-            <tr v-for="lead in leads" :key="lead.id" class="hover:bg-slate-50/50">
-              <td class="py-3 px-4 font-mono font-semibold text-slate-700">{{ lead.id }}</td>
-              <td class="py-3 px-4 font-mono">{{ lead.listing_id }}</td>
-              <td class="py-3 px-4 text-slate-500 capitalize">{{ lead.source }}</td>
-              <td class="py-3 px-4">
-                <span class="text-[9px] font-bold px-2 py-0.5 rounded-full border bg-amber-50 border-amber-200 text-amber-700 capitalize">
-                  {{ lead.status }}
-                </span>
-              </td>
-              <td class="py-3 px-4 text-slate-500">{{ formatDate(lead.last_activity_at) }}</td>
-              <td class="py-3 px-4 text-right">
-                <button 
-                  @click="openViewingModal(lead)"
-                  class="bg-indigo-55 border border-indigo-200 hover:bg-indigo-100 text-indigo-600 font-bold px-2.5 py-1 rounded-lg text-[10px]"
-                >
-                  Log Viewing
-                </button>
-              </td>
-            </tr>
-            <tr v-if="leads.length === 0">
-              <td colspan="6" class="text-center py-12 text-slate-400 text-xs">
-                No active leads currently assigned to you.
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- 2. Logged Viewings Tab -->
-    <div v-if="activeTab === 'viewings'" class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
-      <div>
-        <h2 class="font-bold text-slate-800 text-base">Logged Property Walkthroughs</h2>
-        <p class="text-xs text-slate-500">View historic viewing events scheduled or completed with clients.</p>
-      </div>
-
-      <div class="overflow-x-auto">
-        <table class="w-full text-xs text-left">
-          <thead>
-            <tr class="bg-slate-50 border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider text-[10px]">
-              <th class="py-2.5 px-4">Viewing ID</th>
-              <th class="py-2.5 px-4">Lead ID</th>
-              <th class="py-2.5 px-4">Scheduled Date</th>
-              <th class="py-2.5 px-4">Caretaker / Agent Notes</th>
-              <th class="py-2.5 px-4">Logged At</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-100">
-            <tr v-for="v in viewings" :key="v.id" class="hover:bg-slate-50/50">
-              <td class="py-3 px-4 font-mono font-semibold text-slate-700">{{ v.id }}</td>
-              <td class="py-3 px-4 font-mono">{{ v.lead_id }}</td>
-              <td class="py-3 px-4 font-semibold text-slate-800">{{ new Date(v.scheduled).toLocaleDateString() }} - {{ new Date(v.scheduled).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) }}</td>
-              <td class="py-3 px-4 text-slate-600 max-w-sm truncate" :title="v.notes">{{ v.notes }}</td>
-              <td class="py-3 px-4 text-slate-500">{{ new Date(v.logged_at).toLocaleDateString() }}</td>
-            </tr>
-            <tr v-if="viewings.length === 0">
-              <td colspan="5" class="text-center py-12 text-slate-400 text-xs">
-                No viewings scheduled yet. Click "Log Viewing" in the leads tab.
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- 3. Performance & Vouchers Tab -->
-    <div v-if="activeTab === 'performance'" class="space-y-6">
-      <!-- Performance summary cards -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
-          <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Average Satisfaction Rating</span>
-          <span class="text-2xl font-black text-amber-500 mt-2 block">★ 4.8 / 5.0</span>
-          <span class="text-[9px] text-slate-400 mt-2 block font-semibold">Based on 15 settled clients</span>
-        </div>
-        <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
-          <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Total Commissions Earned</span>
-          <span class="text-2xl font-black text-emerald-600 mt-2 block">KES {{ formatCurrency(stats?.commissions_earned || 24000) }}</span>
-          <span class="text-[9px] text-slate-400 mt-2 block font-semibold">Paid out directly to bank wallet</span>
-        </div>
-        <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
-          <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Draft Properties Submitted</span>
-          <span class="text-2xl font-black text-slate-800 mt-2 block">{{ stats?.properties_submitted || 2 }} Properties</span>
-          <span class="text-[9px] text-slate-400 mt-2 block font-semibold">Awaiting principal admin listing check</span>
-        </div>
-      </div>
-
-      <!-- Commissions detail table -->
-      <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
+    <!-- Quick Action / Metric Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col justify-between">
         <div>
-          <h2 class="font-bold text-slate-800 text-base">Your Commissions Ledger</h2>
-          <p class="text-xs text-slate-500">Audit report of all referral commissions paid or pending approval.</p>
+          <span class="text-[9px] text-slate-400 font-bold uppercase tracking-wider block">Assigned Leads</span>
+          <span class="text-2xl font-black text-slate-850 mt-1 block">{{ leads.length }}</span>
         </div>
+        <router-link to="/leads" class="text-[10px] text-indigo-600 hover:text-indigo-700 font-bold mt-4 flex items-center gap-1">
+          Open Directory →
+        </router-link>
+      </div>
 
-        <div class="overflow-x-auto">
-          <table class="w-full text-xs text-left">
-            <thead>
-              <tr class="bg-slate-50 border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider text-[10px]">
-                <th class="py-2.5 px-4">Voucher ID</th>
-                <th class="py-2.5 px-4">Listing Ref</th>
-                <th class="py-2.5 px-4">Earned Amount</th>
-                <th class="py-2.5 px-4">Status</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100">
-              <tr v-for="c in commissions" :key="c.id" class="hover:bg-slate-50/50">
-                <td class="py-3 px-4 font-mono font-semibold text-slate-700">{{ c.id }}</td>
-                <td class="py-3 px-4 font-mono">{{ c.listing_id }}</td>
-                <td class="py-3 px-4 font-bold text-slate-800">KES {{ formatCurrency(c.amount) }}</td>
-                <td class="py-3 px-4">
-                  <span :class="['text-[9px] font-bold px-2 py-0.5 rounded-full border uppercase', c.status === 'paid' ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-amber-50 border-amber-200 text-amber-700']">
-                    {{ c.status }}
-                  </span>
-                </td>
-              </tr>
-              <tr v-if="commissions.length === 0">
-                <td colspan="4" class="text-center py-12 text-slate-400 text-xs">
-                  No commissions ledger recorded.
-                </td>
-              </tr>
-            </tbody>
-          </table>
+      <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col justify-between">
+        <div>
+          <span class="text-[9px] text-slate-400 font-bold uppercase tracking-wider block">Logged Viewings</span>
+          <span class="text-2xl font-black text-slate-850 mt-1 block">{{ viewings.length }}</span>
         </div>
+        <router-link to="/viewings" class="text-[10px] text-indigo-600 hover:text-indigo-700 font-bold mt-4 flex items-center gap-1">
+          Open Tour Logs →
+        </router-link>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col justify-between">
+        <div>
+          <span class="text-[9px] text-slate-400 font-bold uppercase tracking-wider block">Total Earnings</span>
+          <span class="text-2xl font-black text-emerald-600 mt-1 block">KES {{ formatCurrency(stats?.commissions_earned || 24000) }}</span>
+        </div>
+        <router-link to="/performance" class="text-[10px] text-indigo-600 hover:text-indigo-700 font-bold mt-4 flex items-center gap-1">
+          View Ledger →
+        </router-link>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col justify-between">
+        <div>
+          <span class="text-[9px] text-slate-400 font-bold uppercase tracking-wider block">Satisfaction Rating</span>
+          <span class="text-2xl font-black text-amber-500 mt-1 block">★ 4.8 / 5.0</span>
+        </div>
+        <span class="text-[9px] text-slate-400 font-medium block mt-4">Based on client feedback</span>
       </div>
     </div>
 
-    <!-- Modal: Log Property Viewing -->
-    <Teleport to="body">
-      <div v-if="showViewingModal" class="modal-overlay">
-        <div class="modal-backdrop" @click="showViewingModal = false"></div>
-        <div class="modal-panel max-w-md">
-          <div class="modal-header border-b border-slate-100 pb-3 flex justify-between items-center">
-            <h3 class="text-base font-bold text-slate-900 font-heading">Schedule / Log Viewing</h3>
-            <button @click="showViewingModal = false" class="text-slate-400 hover:text-slate-700 p-1">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-            </button>
+    <!-- Dual Summary Layout -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Recent Assigned Leads Column -->
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
+        <div class="flex justify-between items-center">
+          <div>
+            <h2 class="font-bold text-slate-800 text-sm font-heading">Recent Leads</h2>
+            <p class="text-[10px] text-slate-400">Your most recently assigned client intake requests.</p>
           </div>
-          <form @submit.prevent="submitViewing" class="space-y-4 pt-3">
-            <div>
-              <label class="form-label text-[10px]">Lead ID</label>
-              <input :value="selectedLead?.id" type="text" disabled class="form-input text-xs bg-slate-50" />
-            </div>
-            <div>
-              <label class="form-label text-[10px]">Scheduled Date &amp; Time</label>
-              <input v-model="viewingForm.scheduled" type="datetime-local" required class="form-input text-xs" />
-            </div>
-            <div>
-              <label class="form-label text-[10px]">Staff Field Notes</label>
-              <textarea v-model="viewingForm.notes" required placeholder="Enter walk-through feedback, client requirements, or details..." class="form-input h-24 text-xs resize-none"></textarea>
-            </div>
+          <router-link to="/leads" class="text-[10px] text-slate-500 hover:text-indigo-600 font-bold">
+            View All
+          </router-link>
+        </div>
 
-            <div class="flex justify-end gap-3 pt-3 border-t border-slate-100">
-              <button type="button" @click="showViewingModal = false" class="btn border border-slate-200 text-slate-600 font-semibold py-2 px-4 rounded-xl text-xs">Cancel</button>
-              <button type="submit" :disabled="submitting" class="btn bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-xl text-xs disabled:opacity-50">Log Viewing</button>
+        <div class="divide-y divide-slate-100">
+          <div v-for="lead in recentLeads" :key="lead.id" class="py-3 flex items-center justify-between text-xs">
+            <div>
+              <p class="font-semibold text-slate-800 font-mono">{{ lead.id }}</p>
+              <p class="text-[10px] text-slate-400 mt-0.5">Listing: {{ lead.listing_id }} | Source: <span class="capitalize">{{ lead.source }}</span></p>
             </div>
-          </form>
+            <span :class="['text-[9px] font-bold px-2 py-0.5 rounded-full border uppercase', lead.status === 'converted' ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-amber-50 border-amber-200 text-amber-700']">
+              {{ lead.status }}
+            </span>
+          </div>
+          <div v-if="recentLeads.length === 0" class="text-center py-8 text-slate-400 text-xs">
+            No leads currently assigned.
+          </div>
         </div>
       </div>
-    </Teleport>
+
+      <!-- Recent Viewings Column -->
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
+        <div class="flex justify-between items-center">
+          <div>
+            <h2 class="font-bold text-slate-800 text-sm font-heading">Upcoming &amp; Recent Viewings</h2>
+            <p class="text-[10px] text-slate-400">Scheduled walkthroughs logged with prospective clients.</p>
+          </div>
+          <router-link to="/viewings" class="text-[10px] text-slate-500 hover:text-indigo-600 font-bold">
+            View All
+          </router-link>
+        </div>
+
+        <div class="divide-y divide-slate-100">
+          <div v-for="v in recentViewings" :key="v.id" class="py-3 flex justify-between items-center text-xs">
+            <div class="min-w-0 pr-3">
+              <p class="font-semibold text-slate-800 truncate" :title="v.notes">{{ v.notes }}</p>
+              <p class="text-[10px] text-slate-400 mt-0.5">Lead: {{ v.lead_id }} | Logged: {{ new Date(v.logged_at).toLocaleDateString() }}</p>
+            </div>
+            <span class="text-[10px] font-semibold text-indigo-600 whitespace-nowrap bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-lg">
+              {{ new Date(v.scheduled).toLocaleDateString() }}
+            </span>
+          </div>
+          <div v-if="recentViewings.length === 0" class="text-center py-8 text-slate-400 text-xs">
+            No viewings scheduled yet.
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
-import { ref, reactive, computed, onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { computed, onMounted } from 'vue';
 import { useAppStore } from '@/stores/store';
 
 export default {
   name: 'StaffDashboard',
   setup() {
     const store = useAppStore();
-    const route = useRoute();
-    const router = useRouter();
-
-    const activeTab = computed({
-      get() {
-        const path = route.path;
-        if (path === '/viewings') return 'viewings';
-        if (path === '/performance') return 'performance';
-        return 'leads';
-      },
-      set(val) {
-        if (val === 'viewings') router.push('/viewings');
-        else if (val === 'performance') router.push('/performance');
-        else router.push('/leads');
-      }
-    });
-
-    const showViewingModal = ref(false);
-    const selectedLead = ref(null);
-    const submitting = ref(false);
-
-    const viewingForm = reactive({
-      notes: '',
-      scheduled: ''
-    });
 
     const stats = computed(() => store.dashboardStats);
-    const leads = computed(() => store.leads);
-    const viewings = computed(() => store.viewings);
-    const commissions = computed(() => store.commissions);
+    const leads = computed(() => store.leads || []);
+    const viewings = computed(() => store.viewings || []);
+
+    const recentLeads = computed(() => {
+      return [...leads.value].slice(0, 3);
+    });
+
+    const recentViewings = computed(() => {
+      return [...viewings.value].slice(0, 3);
+    });
 
     const loadData = async () => {
       await store.fetchDashboardStats();
@@ -258,56 +148,15 @@ export default {
       await store.fetchViewings();
     };
 
-    const openViewingModal = (lead) => {
-      selectedLead.value = lead;
-      viewingForm.notes = '';
-      viewingForm.scheduled = '';
-      showViewingModal.value = true;
-    };
-
-    const submitViewing = async () => {
-      submitting.value = true;
-      try {
-        await store.createViewing(
-          selectedLead.value.id,
-          viewingForm.notes,
-          viewingForm.scheduled ? new Date(viewingForm.scheduled) : new Date()
-        );
-        showViewingModal.value = false;
-        await store.fetchViewings();
-      } catch (err) {
-        alert(err.message);
-      } finally {
-        submitting.value = false;
-      }
-    };
-
     const formatCurrency = (val) => {
       return Number(val).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-    };
-
-    const formatDate = (dStr) => {
-      if (!dStr) return '';
-      const date = new Date(dStr);
-      return date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
     };
 
     onMounted(loadData);
 
     return {
-      activeTab,
-      showViewingModal,
-      selectedLead,
-      viewingForm,
-      submitting,
-      stats,
-      leads,
-      viewings,
-      commissions,
-      openViewingModal,
-      submitViewing,
-      formatCurrency,
-      formatDate
+      stats, leads, viewings, recentLeads, recentViewings,
+      formatCurrency
     };
   }
 };

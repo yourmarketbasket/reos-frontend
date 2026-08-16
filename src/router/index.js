@@ -28,6 +28,9 @@ import SystemUsersView from '@/views/admin/SystemUsersView.vue';
 import SMSFallbackView from '@/views/admin/SMSFallbackView.vue';
 import SearchBrowseView from '@/views/shared/SearchBrowseView.vue';
 import MaintenanceView from '@/views/shared/MaintenanceView.vue';
+import LeadsView from '@/views/staff/LeadsView.vue';
+import ViewingsView from '@/views/staff/ViewingsView.vue';
+import PerformanceView from '@/views/staff/PerformanceView.vue';
 
 const routes = [
   {
@@ -186,19 +189,19 @@ const routes = [
   {
     path: '/leads',
     name: 'leads',
-    component: DashboardWrapper,
+    component: LeadsView,
     meta: { requiresAuth: true }
   },
   {
     path: '/viewings',
     name: 'viewings',
-    component: DashboardWrapper,
+    component: ViewingsView,
     meta: { requiresAuth: true }
   },
   {
     path: '/performance',
     name: 'performance',
-    component: DashboardWrapper,
+    component: PerformanceView,
     meta: { requiresAuth: true }
   },
   {
