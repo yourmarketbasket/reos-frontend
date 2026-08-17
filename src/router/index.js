@@ -1,36 +1,38 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { useAppStore } from '@/stores/store';
+
+// Eagerly loaded (tiny, needed immediately on page load)
 import Login from '@/views/Login.vue';
-import InviteAccept from '@/views/InviteAccept.vue';
 import Landing from '@/views/Landing.vue';
 import VerifyOTP from '@/views/VerifyOTP.vue';
-import Browse from '@/views/Browse.vue';
-import AdminAuth from '@/views/AdminAuth.vue';
-import SuperadminAuth from '@/views/SuperadminAuth.vue';
 
-// Dashboard and Tab View Components
-import DashboardWrapper from '@/views/shared/DashboardWrapper.vue';
-import ProfileView from '@/views/shared/ProfileView.vue';
-import NotificationsView from '@/views/shared/NotificationsView.vue';
-import DisputesView from '@/views/shared/DisputesView.vue';
-import PropertiesView from '@/views/shared/PropertiesView.vue';
-import ListingsView from '@/views/shared/ListingsView.vue';
-import ApplicationsView from '@/views/shared/ApplicationsView.vue';
-import LeasesView from '@/views/shared/LeasesView.vue';
-import LedgerView from '@/views/shared/LedgerView.vue';
-import InvitationsView from '@/views/shared/InvitationsView.vue';
-import TierWrapper from '@/views/shared/TierWrapper.vue';
-import PropertyApprovalsView from '@/views/admin/PropertyApprovalsView.vue';
-import RegionsView from '@/views/admin/RegionsView.vue';
-import CommissionRulesView from '@/views/shared/CommissionRulesView.vue';
-import GatewaysView from '@/views/admin/GatewaysView.vue';
-import SystemUsersView from '@/views/admin/SystemUsersView.vue';
-import SMSFallbackView from '@/views/admin/SMSFallbackView.vue';
-import SearchBrowseView from '@/views/shared/SearchBrowseView.vue';
-import MaintenanceView from '@/views/shared/MaintenanceView.vue';
-import LeadsView from '@/views/staff/LeadsView.vue';
-import ViewingsView from '@/views/staff/ViewingsView.vue';
-import PerformanceView from '@/views/staff/PerformanceView.vue';
+// All other views are lazy-loaded per route to minimize initial bundle
+const InviteAccept        = () => import('@/views/InviteAccept.vue');
+const Browse              = () => import('@/views/Browse.vue');
+const AdminAuth           = () => import('@/views/AdminAuth.vue');
+const SuperadminAuth      = () => import('@/views/SuperadminAuth.vue');
+const DashboardWrapper    = () => import('@/views/shared/DashboardWrapper.vue');
+const ProfileView         = () => import('@/views/shared/ProfileView.vue');
+const NotificationsView   = () => import('@/views/shared/NotificationsView.vue');
+const DisputesView        = () => import('@/views/shared/DisputesView.vue');
+const PropertiesView      = () => import('@/views/shared/PropertiesView.vue');
+const ListingsView        = () => import('@/views/shared/ListingsView.vue');
+const ApplicationsView    = () => import('@/views/shared/ApplicationsView.vue');
+const LeasesView          = () => import('@/views/shared/LeasesView.vue');
+const LedgerView          = () => import('@/views/shared/LedgerView.vue');
+const InvitationsView     = () => import('@/views/shared/InvitationsView.vue');
+const TierWrapper         = () => import('@/views/shared/TierWrapper.vue');
+const PropertyApprovalsView = () => import('@/views/admin/PropertyApprovalsView.vue');
+const RegionsView         = () => import('@/views/admin/RegionsView.vue');
+const CommissionRulesView = () => import('@/views/shared/CommissionRulesView.vue');
+const GatewaysView        = () => import('@/views/admin/GatewaysView.vue');
+const SystemUsersView     = () => import('@/views/admin/SystemUsersView.vue');
+const SMSFallbackView     = () => import('@/views/admin/SMSFallbackView.vue');
+const SearchBrowseView    = () => import('@/views/shared/SearchBrowseView.vue');
+const MaintenanceView     = () => import('@/views/shared/MaintenanceView.vue');
+const LeadsView           = () => import('@/views/staff/LeadsView.vue');
+const ViewingsView        = () => import('@/views/staff/ViewingsView.vue');
+const PerformanceView     = () => import('@/views/staff/PerformanceView.vue');
 
 const routes = [
   {
@@ -76,7 +78,7 @@ const routes = [
     name: 'invite-accept',
     component: InviteAccept
   },
-  
+
   // Authenticated routes mapped to traditional page paths
   {
     path: '/dashboard',
@@ -219,7 +221,7 @@ const routes = [
   {
     path: '/maintenance',
     name: 'maintenance',
-    component: DashboardWrapper,
+    component: MaintenanceView,
     meta: { requiresAuth: true }
   }
 ];
