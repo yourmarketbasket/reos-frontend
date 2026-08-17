@@ -388,40 +388,40 @@
 </template>
 
 <script>
-import { ref, computed, watch, onMounted, defineComponent, h } from 'vue';
+import { ref, computed, watch, onMounted, defineComponent, defineAsyncComponent, h } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useAppStore } from '@/stores/store';
 
-// Role Dashboards
-import LandlordDashboard from '@/views/landlord/LandlordDashboard.vue';
-import TenantDashboard from '@/views/tenant/TenantDashboard.vue';
-import CaretakerDashboard from '@/views/caretaker/CaretakerDashboard.vue';
-import AgentDashboard from '@/views/agent/AgentDashboard.vue';
-import AdminDashboard from '@/views/admin/AdminDashboard.vue';
-import TechAdminDashboard from '@/views/admin/TechAdminDashboard.vue';
-import SupportAdminDashboard from '@/views/admin/SupportAdminDashboard.vue';
-import BillingAdminDashboard from '@/views/admin/BillingAdminDashboard.vue';
-import StaffDashboard from '@/views/staff/StaffDashboard.vue';
+// Role Dashboards — lazy loaded, only one is ever shown at a time
+const LandlordDashboard      = defineAsyncComponent(() => import('@/views/landlord/LandlordDashboard.vue'));
+const TenantDashboard        = defineAsyncComponent(() => import('@/views/tenant/TenantDashboard.vue'));
+const CaretakerDashboard     = defineAsyncComponent(() => import('@/views/caretaker/CaretakerDashboard.vue'));
+const AgentDashboard         = defineAsyncComponent(() => import('@/views/agent/AgentDashboard.vue'));
+const AdminDashboard         = defineAsyncComponent(() => import('@/views/admin/AdminDashboard.vue'));
+const TechAdminDashboard     = defineAsyncComponent(() => import('@/views/admin/TechAdminDashboard.vue'));
+const SupportAdminDashboard  = defineAsyncComponent(() => import('@/views/admin/SupportAdminDashboard.vue'));
+const BillingAdminDashboard  = defineAsyncComponent(() => import('@/views/admin/BillingAdminDashboard.vue'));
+const StaffDashboard         = defineAsyncComponent(() => import('@/views/staff/StaffDashboard.vue'));
 
-// Tab views
-import InvitationsView from '@/views/shared/InvitationsView.vue';
-import LedgerView from '@/views/shared/LedgerView.vue';
-import MaintenanceView from '@/views/shared/MaintenanceView.vue';
-import DisputesView from '@/views/shared/DisputesView.vue';
-import GatewaysView from '@/views/admin/GatewaysView.vue';
-import SystemUsersView from '@/views/admin/SystemUsersView.vue';
-import SMSFallbackView from '@/views/admin/SMSFallbackView.vue';
-import ProfileView from '@/views/shared/ProfileView.vue';
-import TierConfigView from '@/views/admin/TierConfigView.vue';
-import TierPurchaseView from '@/views/shared/TierPurchaseView.vue';
-import RegionsView from '@/views/admin/RegionsView.vue';
-import CommissionRulesView from '@/views/shared/CommissionRulesView.vue';
-import PropertyApprovalsView from '@/views/admin/PropertyApprovalsView.vue';
-import PropertiesView from '@/views/shared/PropertiesView.vue';
-import ListingsView from '@/views/shared/ListingsView.vue';
-import ApplicationsView from '@/views/shared/ApplicationsView.vue';
-import LeasesView from '@/views/shared/LeasesView.vue';
-import NotificationsView from '@/views/shared/NotificationsView.vue';
+// Tab views — lazy loaded on demand
+const InvitationsView      = defineAsyncComponent(() => import('@/views/shared/InvitationsView.vue'));
+const LedgerView           = defineAsyncComponent(() => import('@/views/shared/LedgerView.vue'));
+const MaintenanceView      = defineAsyncComponent(() => import('@/views/shared/MaintenanceView.vue'));
+const DisputesView         = defineAsyncComponent(() => import('@/views/shared/DisputesView.vue'));
+const GatewaysView         = defineAsyncComponent(() => import('@/views/admin/GatewaysView.vue'));
+const SystemUsersView      = defineAsyncComponent(() => import('@/views/admin/SystemUsersView.vue'));
+const SMSFallbackView      = defineAsyncComponent(() => import('@/views/admin/SMSFallbackView.vue'));
+const ProfileView          = defineAsyncComponent(() => import('@/views/shared/ProfileView.vue'));
+const TierConfigView       = defineAsyncComponent(() => import('@/views/admin/TierConfigView.vue'));
+const TierPurchaseView     = defineAsyncComponent(() => import('@/views/shared/TierPurchaseView.vue'));
+const RegionsView          = defineAsyncComponent(() => import('@/views/admin/RegionsView.vue'));
+const CommissionRulesView  = defineAsyncComponent(() => import('@/views/shared/CommissionRulesView.vue'));
+const PropertyApprovalsView = defineAsyncComponent(() => import('@/views/admin/PropertyApprovalsView.vue'));
+const PropertiesView       = defineAsyncComponent(() => import('@/views/shared/PropertiesView.vue'));
+const ListingsView         = defineAsyncComponent(() => import('@/views/shared/ListingsView.vue'));
+const ApplicationsView     = defineAsyncComponent(() => import('@/views/shared/ApplicationsView.vue'));
+const LeasesView           = defineAsyncComponent(() => import('@/views/shared/LeasesView.vue'));
+const NotificationsView    = defineAsyncComponent(() => import('@/views/shared/NotificationsView.vue'));
 
 // Reusable sidebar button component
 const SidebarBtn = defineComponent({
