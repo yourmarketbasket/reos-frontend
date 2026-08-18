@@ -11,9 +11,9 @@
         <img src="/logo.png" class="w-6 h-6 object-contain" alt="REOS Logo" />
         <span class="font-bold text-base text-slate-900 tracking-tight font-heading">REOS</span>
       </div>
-      <div :class="['w-8 h-8 rounded-full border-2 flex items-center justify-center font-bold text-xs uppercase', roleAccentBorder]">
+      <div :class="['w-8 h-8 rounded-full border-2 flex items-center justify-center font-bold text-xs uppercase text-white', roleAccentBg]">
         <img v-if="store.user?.profile_image" :src="store.user.profile_image" class="w-full h-full rounded-full object-cover" alt="Avatar" />
-        <span v-else :class="roleAccentText">{{ userEmailPrefix }}</span>
+        <span v-else>{{ userEmailPrefix }}</span>
       </div>
     </header>
 
@@ -320,7 +320,7 @@
         <div class="flex items-center gap-2.5 min-w-0 w-full">
           <div class="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 border border-brand-500/10">
             <img v-if="store.user?.profile_image" :src="store.user.profile_image" class="w-full h-full object-cover" alt="Avatar" />
-            <div v-else :class="['w-full h-full flex items-center justify-center font-bold text-xs uppercase bg-gradient-to-br text-white', roleGradient]">
+            <div v-else :class="['w-full h-full flex items-center justify-center font-bold text-xs uppercase text-white', roleAccentBg]">
               <span>{{ userEmailPrefix }}</span>
             </div>
           </div>

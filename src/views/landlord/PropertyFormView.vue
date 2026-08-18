@@ -10,9 +10,17 @@
           Provide complete classification, utilities, features, and geographic assets.
         </p>
       </div>
-      <button @click="goBack" class="text-xs font-semibold text-slate-500 hover:text-slate-700 bg-slate-100 px-3 py-1.5 rounded-lg">
-        Cancel &amp; Back
-      </button>
+      <div class="flex items-center gap-3">
+        <!-- Publish status badge -->
+        <span v-if="isEdit && currentProperty"
+          :class="['text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full border', currentProperty.publish_status === 'published' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-500 border-slate-200']"
+        >
+          {{ currentProperty.publish_status === 'published' ? '● Published' : '○ Draft' }}
+        </span>
+        <button @click="goBack" class="text-xs font-semibold text-slate-500 hover:text-slate-700 bg-slate-100 px-3 py-1.5 rounded-lg">
+          Cancel &amp; Back
+        </button>
+      </div>
     </div>
 
     <!-- Tab Navigation -->
@@ -435,13 +443,39 @@
           Previous Step
         </button>
         
-        <div class="flex gap-3">
+        <div class="flex gap-3 items-center">
+          <!-- Inline error if trying to publish without images -->
+          <span v-if="publishError" class="text-[10px] text-red-600 font-semibold max-w-[200px] text-right">{{ publishError }}</span>
+
           <button v-if="currentTabIndex < tabs.length - 1" type="button" @click="nextTab" class="bg-brand-500 hover:bg-brand-600 text-dark font-bold px-4 py-2 rounded-xl text-xs">
             Next Step
           </button>
-          <button v-else type="submit" :disabled="formLoading" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-5 py-2.5 rounded-xl text-xs disabled:opacity-55">
-            {{ formLoading ? 'Submitting property…' : 'Submit Property for Approval' }}
+
+          <!-- On last tab: Save as Draft -->
+          <button v-if="currentTabIndex === tabs.length - 1" type="submit" :disabled="formLoading"
+            class="border border-slate-200 text-slate-600 hover:bg-slate-50 font-bold px-4 py-2 rounded-xl text-xs disabled:opacity-50">
+            {{ formLoading ? 'Saving…' : (isEdit ? 'Save Changes' : 'Save as Draft') }}
           </button>
+
+          <!-- Publish / Unpublish toggle (only when editing an existing property) -->
+          <template v-if="isEdit && currentProperty">
+            <button v-if="currentProperty.publish_status !== 'published'"
+              type="button"
+              @click="handlePublish"
+              :disabled="publishLoading"
+              class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-5 py-2 rounded-xl text-xs disabled:opacity-50"
+            >
+              {{ publishLoading ? 'Publishing…' : 'Publish Property' }}
+            </button>
+            <button v-else
+              type="button"
+              @click="handleUnpublish"
+              :disabled="publishLoading"
+              class="bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold px-4 py-2 rounded-xl text-xs disabled:opacity-50"
+            >
+              {{ publishLoading ? '...' : 'Move to Draft' }}
+            </button>
+          </template>
         </div>
       </div>
     </form>
@@ -840,10 +874,44 @@ export default {
       }
     });
 
+    // --- Publish / Unpublish support ---
+    const publishLoading = ref(false);
+    const publishError = ref('');
+    const currentProperty = computed(() => store.properties.find(p => p.id === props.propertyId) || null);
+
+    const handlePublish = async () => {
+      publishError.value = '';
+      if (!form.images || form.images.length === 0) {
+        publishError.value = 'Add at least one image (Images tab) before publishing.';
+        return;
+      }
+      publishLoading.value = true;
+      try {
+        await store.publishProperty(props.propertyId);
+      } catch (e) {
+        publishError.value = e?.message || 'Publish failed';
+      } finally {
+        publishLoading.value = false;
+      }
+    };
+
+    const handleUnpublish = async () => {
+      publishLoading.value = true;
+      try {
+        await store.unpublishProperty(props.propertyId);
+      } catch (e) {
+        // error shown via store toast
+      } finally {
+        publishLoading.value = false;
+      }
+    };
+
     return {
       currentTab, formLoading, uploading, isEdit, tabs, currentTabIndex, form, regions,
       latitude, longitude,
+      publishLoading, publishError, currentProperty,
       nextTab, prevTab, addNearby, removeNearby, setCover, removeImage, uploadFiles, goBack, submitForm,
+      handlePublish, handleUnpublish,
       locationSearchQuery, locationSearchResults, searchingLocation, noLocationResults,
       searchLocation, selectSearchResult
     };

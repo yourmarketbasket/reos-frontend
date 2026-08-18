@@ -1,479 +1,379 @@
 <template>
-  <div class="min-h-screen bg-brand-50 text-dark flex flex-col font-sans selection:bg-brand-200 selection:text-brand-900">
-    <!-- Global Header -->
-    <header class="bg-white/90 backdrop-blur-md border-b border-brand-100/60 sticky top-0 z-50 w-full px-6 py-4 flex items-center justify-between transition-all duration-200 shadow-sm">
+  <div class="min-h-screen bg-[#faf8f5] text-dark flex flex-col font-sans selection:bg-brand-200 selection:text-brand-900">
+
+    <!-- ===== STICKY HEADER ===== -->
+    <header class="bg-white/90 backdrop-blur-md border-b border-brand-100/60 sticky top-0 z-50 w-full px-6 py-3.5 flex items-center justify-between shadow-sm">
       <div class="flex items-center gap-3">
         <router-link to="/" class="flex items-center gap-3">
-          <img src="/logo.png" class="w-8 h-8 object-contain flex-shrink-0" alt="REOS Logo" />
-          <span class="font-heading font-bold text-xl tracking-wider text-dark uppercase">REOS</span>
+          <img src="/logo.png" class="w-7 h-7 object-contain flex-shrink-0" alt="REOS Logo" />
+          <span class="font-heading font-bold text-lg tracking-wider text-dark uppercase">REOS</span>
         </router-link>
       </div>
-
-      <!-- Navigation Links -->
-      <nav class="hidden md:flex items-center gap-8 text-xs font-bold uppercase tracking-wider text-slate-500">
-        <router-link to="/#philosophy" class="hover:text-brand-500 transition-colors">Philosophy</router-link>
-        <router-link to="/#portals" class="hover:text-brand-500 transition-colors">Portals</router-link>
-        <router-link to="/#offerings" class="hover:text-brand-500 transition-colors">Offerings</router-link>
-        <router-link to="/#features" class="hover:text-brand-500 transition-colors">Features</router-link>
-        <router-link to="/browse" class="text-brand-500 transition-colors">Browse Listings</router-link>
+      <nav class="hidden md:flex items-center gap-6 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+        <a href="#featured" class="hover:text-brand-500 transition-colors">Featured</a>
+        <a href="#residential" class="hover:text-brand-500 transition-colors">Residential</a>
+        <a href="#short-stay" class="hover:text-brand-500 transition-colors">Short Stay</a>
+        <a href="#commercial" class="hover:text-brand-500 transition-colors">Commercial</a>
+        <a href="#all" class="hover:text-brand-500 transition-colors">All Listings</a>
       </nav>
-
-      <!-- Action Buttons -->
-      <div class="flex items-center gap-4">
-        <router-link 
-          v-if="!isAuthenticated" 
-          to="/login" 
-          class="text-xs font-bold uppercase tracking-wider text-slate-600 hover:text-brand-500 transition-colors px-2 py-2"
-        >
-          Sign In
-        </router-link>
-        <router-link 
-          v-if="!isAuthenticated" 
-          to="/login?signup=true" 
-          class="bg-brand-500 hover:bg-brand-600 text-white font-bold px-5 py-2.5 rounded-xl text-xs uppercase tracking-wider transition-all duration-200 shadow-sm"
-        >
-          Get Started
-        </router-link>
-        
-        <router-link 
-          v-if="isAuthenticated" 
-          to="/dashboard" 
-          class="bg-brand-500 hover:bg-brand-600 text-white font-bold px-5 py-2.5 rounded-xl text-xs uppercase tracking-wider transition-all duration-200 shadow-sm"
-        >
-          Dashboard
-        </router-link>
-        <button 
-          v-if="isAuthenticated" 
-          @click="handleLogout" 
-          class="text-xs font-bold uppercase tracking-wider text-slate-500 hover:text-dark transition-colors px-2 py-2"
-        >
-          Log Out
-        </button>
+      <div class="flex items-center gap-3">
+        <router-link v-if="!isAuthenticated" to="/login" class="text-[11px] font-bold uppercase tracking-wider text-slate-600 hover:text-brand-500 transition-colors">Sign In</router-link>
+        <router-link v-if="!isAuthenticated" to="/login?signup=true" class="bg-brand-500 hover:bg-brand-600 text-white font-bold px-4 py-2 rounded-xl text-[11px] uppercase tracking-wider transition-all shadow-sm">Get Started</router-link>
+        <router-link v-if="isAuthenticated" to="/dashboard" class="bg-brand-500 hover:bg-brand-600 text-white font-bold px-4 py-2 rounded-xl text-[11px] uppercase tracking-wider transition-all shadow-sm">Dashboard</router-link>
+        <button v-if="isAuthenticated" @click="handleLogout" class="text-[11px] font-bold uppercase tracking-wider text-slate-500 hover:text-dark transition-colors">Log Out</button>
       </div>
     </header>
 
-    <!-- Browse Hero Section -->
-    <section class="bg-gradient-to-br from-[#faf8f5] via-white to-[#f5f0e6] border-b border-brand-100 py-16 px-6 text-center relative">
-      <div class="max-w-4xl mx-auto space-y-6 relative z-10">
-        <span class="inline-flex items-center text-xs uppercase font-extrabold text-brand-700 tracking-widest bg-brand-100 px-3.5 py-1.5 rounded-full border border-brand-200/50">
-          Verified Property Directory
-        </span>
-        <h1 class="font-heading text-4xl sm:text-5xl font-extrabold text-dark tracking-tight leading-tight">
-          Find your next verified space.
-        </h1>
-        <p class="text-slate-500 text-sm sm:text-base max-w-xl mx-auto leading-relaxed">
-          Search real-time listings for renting, leasing, short-stay bookings, event gardens, and media studios (podcast/filming) with digital passports and M-Pesa escrow safeguards.
-        </p>
-
-        <!-- Search Bar and Jurisdiction Filters Combined -->
-        <div class="max-w-2xl mx-auto space-y-4 pt-4">
-          <div class="relative shadow-sm rounded-xl">
-            <input 
-              v-model="searchQuery"
-              type="text" 
-              placeholder="Search by building name, county, or specific location..."
-              class="w-full bg-white border border-brand-200 rounded-xl pl-12 pr-5 py-3.5 text-sm focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-200/50 transition-all text-slate-800"
-            />
-            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </div>
-          </div>
-
-          <!-- Quick Filters -->
-          <div class="flex flex-wrap items-center justify-center gap-2">
-            <span class="text-[10px] uppercase font-extrabold text-slate-400 tracking-wider mr-2">Filter County:</span>
-            <button 
-              @click="toggleJurisdiction('Nairobi City County')"
-              :class="[
-                'text-xs font-bold px-4 py-2 rounded-xl transition-all border shadow-sm flex items-center gap-1.5',
-                selectedJurisdiction === 'Nairobi City County'
-                  ? 'bg-dark text-white border-dark'
-                  : 'bg-white text-slate-600 border-brand-100 hover:bg-brand-50'
-              ]"
-            >
-              <span class="w-1.5 h-1.5 bg-brand-500 rounded-full"></span>
-              Nairobi
-            </button>
-            <button 
-              @click="toggleJurisdiction('Kiambu County')"
-              :class="[
-                'text-xs font-bold px-4 py-2 rounded-xl transition-all border shadow-sm flex items-center gap-1.5',
-                selectedJurisdiction === 'Kiambu County'
-                  ? 'bg-dark text-white border-dark'
-                  : 'bg-white text-slate-600 border-brand-100 hover:bg-brand-50'
-              ]"
-            >
-              <span class="w-1.5 h-1.5 bg-brand-500 rounded-full"></span>
-              Kiambu
-            </button>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Main Listings Body -->
-    <section class="flex-grow py-16 px-6 max-w-7xl mx-auto w-full">
-      <!-- Loading skeleton -->
-      <div v-if="loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 animate-fade-in">
-        <div v-for="i in 3" :key="i" class="bg-white border border-brand-100 rounded-2xl p-6 space-y-6 shadow-sm">
-          <div class="space-y-3">
-            <div class="h-6 bg-slate-100 rounded w-2/3"></div>
-            <div class="h-4 bg-slate-100 rounded w-1/3"></div>
-          </div>
-          <div class="space-y-2 pt-4">
-            <div class="h-4 bg-slate-100 rounded w-full"></div>
-            <div class="h-4 bg-slate-100 rounded w-5/6"></div>
-          </div>
-          <div class="h-20 bg-brand-50/50 rounded-xl"></div>
-        </div>
-      </div>
-
-      <!-- Empty State -->
-      <div v-else-if="filteredProperties.length === 0" class="text-center py-20 bg-white border border-brand-100 rounded-3xl p-8 max-w-xl mx-auto shadow-sm animate-fade-in">
-        <div class="w-16 h-16 rounded-full bg-brand-50 flex items-center justify-center text-slate-300 mx-auto mb-6">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-          </svg>
-        </div>
-        <h3 class="font-heading text-lg font-bold text-dark">No matching properties</h3>
-        <p class="text-xs text-slate-500 mt-2 max-w-sm mx-auto leading-relaxed">
-          We couldn't find any verified properties matching your current filter settings. Try adjusting your search query or selecting a different county.
-        </p>
-      </div>
-
-      <!-- Grid of Properties -->
-      <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 animate-fade-in">
-        <div v-for="prop in filteredProperties" :key="prop.id" class="bg-white border border-brand-100 rounded-3xl overflow-hidden hover:shadow-md transition-all duration-300 flex flex-col group hover:-translate-y-1">
-          <!-- Property Hero Info -->
-          <div class="p-6 flex-grow space-y-4">
-            <div class="flex items-center justify-between">
-              <span class="text-[9px] uppercase font-extrabold tracking-wider px-2.5 py-1 bg-brand-50 text-brand-700 rounded-lg border border-brand-100">
-                {{ prop.jurisdiction }}
-              </span>
-              <span class="text-[10px] text-slate-400 font-bold flex items-center gap-1">
-                <span class="w-1.5 h-1.5 bg-brand-500 rounded-full"></span>
-                Verified
-              </span>
-            </div>
-            
-            <div class="space-y-1.5">
-              <h3 class="font-heading text-xl font-bold text-dark group-hover:text-brand-600 transition-colors">{{ prop.name }}</h3>
-              <p class="text-xs text-slate-500 flex items-center gap-1.5 font-medium">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                Coordinates: {{ prop.location?.coordinates?.join(', ') || 'N/A' }}
-              </p>
-            </div>
-
-            <!-- Amenities -->
-            <div class="space-y-2">
-              <span class="block text-[10px] uppercase tracking-wider font-extrabold text-slate-400">Amenities Offered</span>
-              <div class="flex flex-wrap gap-1.5">
-                <span 
-                  v-for="amenity in prop.amenities" 
-                  :key="amenity" 
-                  class="text-[10px] font-bold bg-brand-50 text-slate-600 border border-brand-100 rounded px-2.5 py-1"
-                >
-                  {{ amenity }}
-                </span>
+    <!-- ===== HERO FEATURED CAROUSEL ===== -->
+    <section id="featured" class="relative overflow-hidden bg-slate-900" style="height:520px">
+      <div class="relative w-full h-full">
+        <div v-for="(prop, idx) in featuredProperties" :key="prop.id" class="absolute inset-0 transition-opacity duration-700"
+          :style="{ opacity: idx === heroIndex ? 1 : 0, zIndex: idx === heroIndex ? 1 : 0 }">
+          <img :src="prop.images?.[0]?.url || 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1600&q=80'" class="w-full h-full object-cover" :alt="prop.name" />
+          <div class="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/30 to-transparent"></div>
+          <div class="absolute bottom-0 left-0 right-0 p-8 md:p-12">
+            <div class="max-w-3xl">
+              <div class="flex items-center gap-3 mb-3">
+                <span class="bg-brand-500 text-white text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full">⭐ Featured</span>
+                <span class="text-white/70 text-xs font-semibold uppercase tracking-wider">{{ prop.property_type?.replace(/_/g,' ') }}</span>
+                <span class="text-white/70 text-xs font-semibold">· {{ prop.city || prop.jurisdiction }}</span>
               </div>
-            </div>
-
-            <!-- Rules -->
-            <div v-if="prop.rules && prop.rules.length > 0" class="space-y-2">
-              <span class="block text-[10px] uppercase tracking-wider font-extrabold text-slate-400">Property Policy Rules</span>
-              <ul class="text-[11px] text-slate-500 space-y-1.5 pl-1 font-medium">
-                <li v-for="rule in prop.rules" :key="rule" class="flex items-center gap-2">
-                  <span class="w-1.5 h-1.5 bg-brand-500 rounded-full flex-shrink-0"></span>
-                  {{ rule }}
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          <!-- Units listing sub-module -->
-          <div class="bg-brand-50/50 p-6 border-t border-brand-100">
-            <span class="block text-[10px] uppercase tracking-wider font-extrabold text-slate-400 mb-3">Available Space & Units</span>
-            
-            <div v-if="!unitsMap[prop.id] || unitsMap[prop.id].length === 0" class="text-xs text-slate-400 italic py-3 text-center bg-white rounded-xl border border-brand-100/50">
-              No units listed for this property.
-            </div>
-
-            <div v-else class="space-y-2.5">
-              <div 
-                v-for="unit in unitsMap[prop.id]" 
-                :key="unit.id" 
-                class="bg-white border border-brand-100 rounded-xl p-3 flex items-center justify-between gap-4 shadow-sm hover:border-brand-200 transition-colors"
-              >
-                <div>
-                  <div class="flex items-center gap-1.5">
-                    <span class="font-bold text-xs text-dark">{{ unit.label }}</span>
-                    <span v-if="unit.building_label" class="text-[9px] font-semibold text-slate-400">({{ unit.building_label }})</span>
-                  </div>
-                  <div class="text-[10px] text-slate-500 mt-1 font-medium">
-                    Rent: <span class="font-bold text-dark">KES {{ unit.rent_amount.toLocaleString() }}</span>
-                  </div>
-                </div>
-
-                <div class="flex items-center gap-3">
-                  <!-- Unit status badges -->
-                  <span 
-                    v-if="unit.status === 'available'" 
-                    class="text-[9px] font-bold px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded border border-emerald-200 uppercase"
-                  >
-                    Available
-                  </span>
-                  <span 
-                    v-else-if="unit.status === 'under_maintenance'" 
-                    class="text-[9px] font-bold px-2 py-0.5 bg-amber-50 text-amber-700 rounded border border-amber-200 uppercase"
-                  >
-                    Repair
-                  </span>
-                  <span 
-                    v-else 
-                    class="text-[9px] font-bold px-2 py-0.5 bg-slate-100 text-slate-500 rounded border border-slate-200 uppercase"
-                  >
-                    Occupied
-                  </span>
-
-                  <!-- Enquire trigger action -->
-                  <button 
-                    @click="enquireUnit(unit)"
-                    class="text-[10px] bg-dark hover:bg-slate-800 text-white font-bold px-3 py-1.5 rounded-lg transition-all shadow-sm"
-                  >
-                    Apply
-                  </button>
-                </div>
+              <h2 class="text-3xl md:text-4xl font-bold font-heading text-white leading-tight mb-2">{{ prop.name }}</h2>
+              <p class="text-white/70 text-sm leading-relaxed mb-6 max-w-xl line-clamp-2">{{ prop.description }}</p>
+              <div class="flex items-center gap-4 flex-wrap">
+                <button @click="openApply(prop)" class="bg-brand-500 hover:bg-brand-600 text-white font-bold px-6 py-3 rounded-xl text-sm transition-all shadow-lg">Apply Now</button>
+                <span class="text-white/60 text-xs font-semibold">{{ prop.total_units || 0 }} units available</span>
               </div>
             </div>
           </div>
         </div>
+        <div v-if="featuredProperties.length === 0" class="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900">
+          <img src="/logo.png" class="w-16 h-16 object-contain opacity-20 mb-4" alt="REOS" />
+          <p class="text-white/30 text-sm font-semibold">Featured listings coming soon</p>
+        </div>
+      </div>
+      <template v-if="featuredProperties.length > 1">
+        <button @click="prevHero" class="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur text-white flex items-center justify-center transition-all z-10">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+        </button>
+        <button @click="nextHero" class="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur text-white flex items-center justify-center transition-all z-10">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+        </button>
+        <div class="absolute bottom-4 right-8 flex gap-2 z-10">
+          <button v-for="(_,i) in featuredProperties" :key="i" @click="heroIndex=i"
+            :class="['h-2 rounded-full transition-all bg-white/50', i===heroIndex ? 'w-5 bg-brand-400' : 'w-2']"></button>
+        </div>
+      </template>
+    </section>
+
+    <!-- ===== FILTER & SEARCH BAR ===== -->
+    <section class="bg-white border-b border-slate-100 sticky top-[57px] z-40 shadow-sm">
+      <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center gap-3">
+        <div class="relative flex-1 min-w-[200px]">
+          <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          <input v-model="searchQuery" type="text" placeholder="Search by name, location, neighbourhood…" class="w-full pl-9 pr-4 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:border-brand-400 bg-slate-50" />
+        </div>
+        <select v-model="filterType" class="text-xs border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 focus:outline-none focus:border-brand-400">
+          <option value="">All Types</option>
+          <optgroup label="Residential">
+            <option value="apartment">Apartment</option><option value="bungalow">Bungalow</option>
+            <option value="villa">Villa</option><option value="townhouse">Townhouse</option>
+            <option value="maisonette">Maisonette</option><option value="studio">Studio</option>
+          </optgroup>
+          <optgroup label="Short Stay">
+            <option value="holiday_home">Holiday Home</option>
+            <option value="hostel">Hostel</option>
+          </optgroup>
+          <optgroup label="Commercial">
+            <option value="office">Office</option><option value="commercial">Commercial</option>
+            <option value="warehouse">Warehouse</option>
+          </optgroup>
+          <optgroup label="Creative">
+            <option value="studio_media">Media Studio</option>
+            <option value="event_space">Event Space</option>
+            <option value="coworking">Coworking</option>
+          </optgroup>
+        </select>
+        <div class="flex items-center gap-2 text-xs">
+          <span class="text-slate-500 font-semibold whitespace-nowrap">Max KES</span>
+          <input v-model.number="filterMaxPrice" type="number" placeholder="Any" min="0" class="w-24 border border-slate-200 rounded-xl px-3 py-2 text-xs bg-slate-50 focus:outline-none focus:border-brand-400" />
+        </div>
+        <select v-model="filterFurnished" class="text-xs border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 focus:outline-none focus:border-brand-400">
+          <option value="">Any Furnishing</option>
+          <option value="furnished">Furnished</option>
+          <option value="unfurnished">Unfurnished</option>
+          <option value="semi_furnished">Semi-Furnished</option>
+        </select>
+        <select v-model="sortBy" class="text-xs border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 focus:outline-none focus:border-brand-400">
+          <option value="newest">Newest</option>
+          <option value="price_asc">Price: Low → High</option>
+          <option value="price_desc">Price: High → Low</option>
+          <option value="name_asc">Name A–Z</option>
+        </select>
+        <button v-if="hasFilters" @click="resetFilters" class="text-[11px] font-bold text-brand-600 hover:text-brand-800 transition-colors">Clear filters</button>
       </div>
     </section>
 
-    <!-- Platform Verification Safety Guide -->
-    <section class="bg-white py-20 px-6 border-y border-brand-100">
-      <div class="max-w-5xl mx-auto">
-        <div class="text-center max-w-2xl mx-auto mb-16 space-y-3">
-          <span class="text-xs uppercase font-extrabold text-brand-700 tracking-widest bg-brand-50 px-3 py-1 rounded-full border border-brand-200/50">
-            Tenant Guidance Details
-          </span>
-          <h2 class="font-heading text-3xl font-extrabold text-dark">How to Secure a Unit via REOS</h2>
-          <p class="text-slate-500 text-xs sm:text-sm">We enforce strict platform safety rules to completely eliminate renting scams</p>
+    <main class="flex-1 max-w-7xl mx-auto w-full px-4 py-10 space-y-16">
+
+      <!-- Residential -->
+      <section id="residential" v-if="residentialProperties.length">
+        <div class="flex items-center justify-between mb-5">
+          <div><h2 class="text-xl font-bold font-heading text-dark">🏠 Residential</h2><p class="text-xs text-slate-500 mt-0.5">Apartments, bungalows, villas &amp; more</p></div>
+          <span class="text-[11px] font-semibold text-slate-400">{{ residentialProperties.length }} listings</span>
         </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+          <property-card v-for="prop in residentialProperties.slice(0,8)" :key="prop.id" :property="prop" @apply="openApply(prop)" />
+        </div>
+      </section>
 
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <!-- Step 1 -->
-          <div class="space-y-4">
-            <div class="w-10 h-10 rounded-xl bg-brand-50 text-brand-600 border border-brand-100 flex items-center justify-center font-heading font-extrabold text-base">1</div>
-            <h3 class="font-heading text-base font-bold text-dark">Select & Verify</h3>
-            <p class="text-slate-500 text-xs leading-relaxed">
-              Explore listings. Each property contains GPS coordinates and verified title credentials to prove active landlord ownership.
-            </p>
-          </div>
+      <!-- Short Stay -->
+      <section id="short-stay" v-if="shortStayProperties.length">
+        <div class="flex items-center justify-between mb-5">
+          <div><h2 class="text-xl font-bold font-heading text-dark">🌴 Short Stay &amp; Holiday</h2><p class="text-xs text-slate-500 mt-0.5">Holiday homes, hostels, serviced apartments</p></div>
+          <span class="text-[11px] font-semibold text-slate-400">{{ shortStayProperties.length }} listings</span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+          <property-card v-for="prop in shortStayProperties.slice(0,8)" :key="prop.id" :property="prop" @apply="openApply(prop)" />
+        </div>
+      </section>
 
-          <!-- Step 2 -->
-          <div class="space-y-4">
-            <div class="w-10 h-10 rounded-xl bg-brand-50 text-brand-600 border border-brand-100 flex items-center justify-center font-heading font-extrabold text-base">2</div>
-            <h3 class="font-heading text-base font-bold text-dark">Reserve Hold</h3>
-            <p class="text-slate-500 text-xs leading-relaxed">
-              Submit a hold fee to delist the unit for a viewing window. Refunding checks protect you if the property description was misrepresented.
-            </p>
-          </div>
+      <!-- Commercial -->
+      <section id="commercial" v-if="commercialProperties.length">
+        <div class="flex items-center justify-between mb-5">
+          <div><h2 class="text-xl font-bold font-heading text-dark">🏢 Commercial &amp; Office</h2><p class="text-xs text-slate-500 mt-0.5">Offices, warehouses, shopfronts</p></div>
+          <span class="text-[11px] font-semibold text-slate-400">{{ commercialProperties.length }} listings</span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+          <property-card v-for="prop in commercialProperties.slice(0,8)" :key="prop.id" :property="prop" @apply="openApply(prop)" />
+        </div>
+      </section>
 
-          <!-- Step 3 -->
-          <div class="space-y-4">
-            <div class="w-10 h-10 rounded-xl bg-brand-50 text-brand-600 border border-brand-100 flex items-center justify-center font-heading font-extrabold text-base">3</div>
-            <h3 class="font-heading text-base font-bold text-dark">Sign Digital Lease</h3>
-            <p class="text-slate-500 text-xs leading-relaxed">
-              A legally-binding lease agreement is generated automatically based on regional county policies. Sign directly inside the tenant portal.
-            </p>
-          </div>
+      <!-- Creative -->
+      <section id="creative" v-if="creativeProperties.length">
+        <div class="flex items-center justify-between mb-5">
+          <div><h2 class="text-xl font-bold font-heading text-dark">🎨 Creative &amp; Event Spaces</h2><p class="text-xs text-slate-500 mt-0.5">Studios, coworking, event spaces, gardens</p></div>
+          <span class="text-[11px] font-semibold text-slate-400">{{ creativeProperties.length }} listings</span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+          <property-card v-for="prop in creativeProperties.slice(0,8)" :key="prop.id" :property="prop" @apply="openApply(prop)" />
+        </div>
+      </section>
 
-          <!-- Step 4 -->
-          <div class="space-y-4">
-            <div class="w-10 h-10 rounded-xl bg-brand-50 text-brand-600 border border-brand-100 flex items-center justify-center font-heading font-extrabold text-base">4</div>
-            <h3 class="font-heading text-base font-bold text-dark">Deposit Escrow</h3>
-            <p class="text-slate-500 text-xs leading-relaxed">
-              Pay your deposit via automated M-Pesa locks. Funds are held in escrow, preventing unilateral landlord deduction withholding at move-out.
-            </p>
+      <!-- All Listings -->
+      <section id="all">
+        <div class="flex items-center justify-between mb-5">
+          <div><h2 class="text-xl font-bold font-heading text-dark">All Listings</h2>
+          <p class="text-xs text-slate-500 mt-0.5">{{ filteredProperties.length }} properties match your search</p></div>
+        </div>
+        <div v-if="loading" class="flex items-center justify-center py-20">
+          <span class="w-8 h-8 border-4 border-brand-500 border-t-transparent rounded-full animate-spin"></span>
+        </div>
+        <div v-else-if="filteredProperties.length === 0" class="text-center py-20">
+          <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5"/></svg>
           </div>
+          <p class="text-sm font-semibold text-slate-500">No properties match your filters</p>
+          <button @click="resetFilters" class="mt-3 text-xs font-bold text-brand-600 hover:underline">Clear all filters</button>
+        </div>
+        <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+          <property-card v-for="prop in paginatedProperties" :key="prop.id" :property="prop" @apply="openApply(prop)" />
+        </div>
+        <!-- Pagination -->
+        <div v-if="totalPages > 1" class="flex justify-center items-center gap-2 mt-8">
+          <button @click="currentPage--" :disabled="currentPage === 1" class="w-9 h-9 rounded-xl border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-brand-50 disabled:opacity-40 transition-colors">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+          </button>
+          <button v-for="p in totalPages" :key="p" @click="currentPage=p"
+            :class="['w-9 h-9 rounded-xl border text-xs font-bold transition-all', currentPage===p ? 'bg-brand-500 text-white border-brand-500' : 'border-slate-200 text-slate-600 hover:bg-brand-50']">{{ p }}</button>
+          <button @click="currentPage++" :disabled="currentPage===totalPages" class="w-9 h-9 rounded-xl border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-brand-50 disabled:opacity-40 transition-colors">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </section>
+    </main>
+
+    <!-- APPLICATION MODAL -->
+    <Teleport to="body">
+      <div v-if="applyModal.open" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" @click.self="applyModal.open=false">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
+          <div class="bg-gradient-to-r from-brand-600 to-brand-500 px-6 py-5 flex items-start justify-between">
+            <div>
+              <h3 class="text-base font-bold text-white font-heading">Apply for this Property</h3>
+              <p class="text-brand-100 text-xs mt-0.5 font-medium">{{ applyModal.property?.name }}</p>
+            </div>
+            <button @click="applyModal.open=false" class="text-white/70 hover:text-white transition-colors mt-0.5">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+          <!-- Auth gate -->
+          <div v-if="!isAuthenticated" class="p-8 text-center">
+            <div class="w-14 h-14 bg-brand-50 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg class="w-7 h-7 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+            </div>
+            <p class="text-sm font-semibold text-slate-700 mb-1">Sign in to apply</p>
+            <p class="text-xs text-slate-500 mb-5">Create a free account or sign in to submit your application.</p>
+            <div class="flex gap-3 justify-center">
+              <router-link to="/login?signup=true&role=tenant&next=/browse" @click="applyModal.open=false" class="bg-brand-500 hover:bg-brand-600 text-white font-bold px-5 py-2.5 rounded-xl text-xs transition-all">Create Account</router-link>
+              <router-link to="/login?next=/browse" @click="applyModal.open=false" class="border border-slate-200 text-slate-600 hover:bg-slate-50 font-bold px-5 py-2.5 rounded-xl text-xs transition-all">Sign In</router-link>
+            </div>
+          </div>
+          <!-- Form -->
+          <form v-else @submit.prevent="submitApplication" class="p-6 space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+              <div><label class="form-label">Your Name</label><input v-model="applyForm.tenant_name" type="text" required class="form-input text-xs" placeholder="Full name" /></div>
+              <div><label class="form-label">Phone Number</label><input v-model="applyForm.phone" type="tel" required class="form-input text-xs" placeholder="+2547XXXXXXXX" /></div>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="form-label">Employment Status</label>
+                <select v-model="applyForm.employment_type" required class="form-select text-xs">
+                  <option value="employed">Employed</option>
+                  <option value="self_employed">Self-Employed</option>
+                  <option value="business_owner">Business Owner</option>
+                  <option value="student">Student</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div><label class="form-label">Monthly Income (KES)</label><input v-model.number="applyForm.monthly_income" type="number" min="0" class="form-input text-xs" placeholder="e.g. 80000" /></div>
+            </div>
+            <div><label class="form-label">Number of Occupants</label><input v-model.number="applyForm.occupants" type="number" min="1" max="20" class="form-input text-xs" /></div>
+            <div><label class="form-label">Additional Notes (optional)</label><textarea v-model="applyForm.notes" rows="3" class="form-input text-xs" placeholder="Tell the landlord anything relevant…"></textarea></div>
+            <div v-if="applyError" class="text-xs text-red-600 font-semibold bg-red-50 px-3 py-2 rounded-lg">{{ applyError }}</div>
+            <div class="flex gap-3 pt-2">
+              <button type="button" @click="applyModal.open=false" class="flex-1 border border-slate-200 text-slate-600 font-bold py-2.5 rounded-xl text-xs hover:bg-slate-50 transition-all">Cancel</button>
+              <button type="submit" :disabled="applyLoading" class="flex-1 bg-brand-500 hover:bg-brand-600 text-white font-bold py-2.5 rounded-xl text-xs transition-all disabled:opacity-50">{{ applyLoading ? 'Submitting…' : 'Submit Application' }}</button>
+            </div>
+          </form>
         </div>
       </div>
-    </section>
+    </Teleport>
 
-    <!-- Global CTA Banner (Warm champagne backdrop) -->
-    <section class="bg-brand-100/40 border-b border-brand-200/50 py-16 px-6 text-center">
-      <div class="max-w-4xl mx-auto space-y-6">
-        <h2 class="font-heading text-3xl sm:text-4xl font-extrabold text-dark">Join the digital rental revolution today.</h2>
-        <p class="text-slate-500 text-xs sm:text-sm max-w-xl mx-auto leading-relaxed">
-          Create your verified rental passport profile, link your properties, and automate your rental ledger balance in real-time.
-        </p>
-        <div class="pt-4 flex flex-wrap justify-center gap-4">
-          <router-link 
-            to="/login?signup=true" 
-            class="bg-brand-500 hover:bg-brand-600 text-white font-bold px-8 py-3.5 rounded-xl text-sm transition-all duration-200 shadow-sm"
-          >
-            Create Your Account
-          </router-link>
-          <a 
-            href="mailto:support@reos.co.ke" 
-            class="border border-dark/20 hover:bg-brand-50 text-dark font-bold px-8 py-3.5 rounded-xl text-sm transition-all duration-200"
-          >
-            Contact Integration Support
-          </a>
-        </div>
-      </div>
-    </section>
-
-    <!-- Global Footer -->
-    <footer class="bg-white border-t border-brand-100 py-16 px-6 text-slate-400 text-xs">
-      <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10 border-b border-brand-100 pb-12 mb-12">
-        <div class="space-y-4">
-          <div class="flex items-center gap-3">
-            <img src="/logo.png" class="w-8 h-8 object-contain flex-shrink-0" alt="REOS Logo" />
-            <span class="font-heading font-bold text-xl tracking-widest text-dark uppercase">REOS</span>
-          </div>
-          <p class="leading-relaxed text-slate-500">
-            The infrastructure layer managing the complete property and tenancy transaction records across Kenyan counties.
-          </p>
-        </div>
-
-        <div class="space-y-4">
-          <h4 class="font-heading text-sm font-bold text-dark uppercase tracking-wider">Product Offerings</h4>
-          <ul class="space-y-2.5 text-slate-500 font-medium">
-            <li><router-link to="/#offerings" class="hover:text-brand-500">Residential Systems</router-link></li>
-            <li><router-link to="/#offerings" class="hover:text-brand-500">Student Housing Matching</router-link></li>
-            <li><router-link to="/#offerings" class="hover:text-brand-500">Commercial Operations</router-link></li>
-            <li><router-link to="/#offerings" class="hover:text-brand-500">Short-Term Calendars</router-link></li>
-          </ul>
-        </div>
-
-        <div class="space-y-4">
-          <h4 class="font-heading text-sm font-bold text-dark uppercase tracking-wider">Stakeholder Portals</h4>
-          <ul class="space-y-2.5 text-slate-500 font-medium">
-            <li><router-link to="/login" class="hover:text-brand-500">Landlords Portal</router-link></li>
-            <li><router-link to="/login" class="hover:text-brand-500">Tenants Portal</router-link></li>
-            <li><router-link to="/login" class="hover:text-brand-500">Caretakers Portal</router-link></li>
-            <li><router-link to="/login" class="hover:text-brand-500">Leasing Agents Portal</router-link></li>
-          </ul>
-        </div>
-
-        <div class="space-y-4">
-          <h4 class="font-heading text-sm font-bold text-dark uppercase tracking-wider">Contact & System</h4>
-          <p class="text-slate-500 leading-relaxed font-medium">
-            REOS Kenya Platform<br/>
-            Nairobi City County, Kenya
-          </p>
-          <p class="font-medium">Email: <a href="mailto:info@reos.co.ke" class="text-brand-500 hover:underline">info@reos.co.ke</a></p>
-        </div>
-      </div>
-
-      <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
-        <p class="text-slate-500 font-medium">&copy; 2026 REOS Rental Ecosystem Operating Platform. All rights reserved.</p>
-        <div class="flex gap-4 text-slate-500 font-medium">
-          <a href="#" class="hover:text-brand-500">Terms of Service</a>
-          <span>&middot;</span>
-          <a href="#" class="hover:text-brand-500">Privacy Policy</a>
-          <span>&middot;</span>
-          <a href="#" class="hover:text-brand-500">Escrow Disclosures</a>
-        </div>
-      </div>
+    <footer class="border-t border-slate-100 bg-white py-6 px-6 text-center text-[11px] text-slate-400 font-semibold">
+      © {{ new Date().getFullYear() }} REOS · Rental OS Platform · All rights reserved
     </footer>
   </div>
 </template>
 
 <script>
-import { onMounted, ref, computed } from 'vue';
-import { useAppStore } from '@/stores/store';
+import { ref, computed, onMounted, onUnmounted, reactive, watch } from 'vue';
 import { useRouter } from 'vue-router';
+import { useAppStore } from '@/stores/store';
+
+const PropertyCard = {
+  name: 'PropertyCard',
+  props: { property: Object },
+  emits: ['apply'],
+  template: `
+    <div class="group bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex flex-col">
+      <div class="relative overflow-hidden h-44 bg-slate-100 flex-shrink-0">
+        <img v-if="property.images?.[0]?.url" :src="property.images[0].url" :alt="property.name"
+          class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"/>
+        <div v-else class="w-full h-full flex items-center justify-center bg-slate-50">
+          <svg class="w-10 h-10 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5"/></svg>
+        </div>
+        <div class="absolute top-3 left-3 flex gap-1.5 flex-wrap">
+          <span v-if="property.is_featured" class="bg-brand-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-full">⭐ Featured</span>
+          <span class="bg-slate-900/70 text-white text-[9px] font-bold px-2 py-0.5 rounded-full capitalize">{{ property.property_type?.replace(/_/g,' ') }}</span>
+        </div>
+      </div>
+      <div class="p-4 flex flex-col flex-1">
+        <h3 class="text-sm font-bold text-slate-800 leading-tight truncate">{{ property.name }}</h3>
+        <p class="text-[11px] text-slate-500 mt-0.5 truncate">{{ property.city || property.jurisdiction }}</p>
+        <p class="text-[11px] text-slate-400 mt-1 line-clamp-2 flex-1">{{ property.description }}</p>
+        <div class="flex items-center justify-between mt-3 pt-3 border-t border-slate-50">
+          <span class="text-[11px] font-bold text-slate-500">{{ property.total_units || 0 }} units</span>
+          <button @click="$emit('apply', property)" class="bg-brand-500 hover:bg-brand-600 text-white font-bold text-[11px] px-3 py-1.5 rounded-lg transition-all">Apply</button>
+        </div>
+      </div>
+    </div>
+  `
+};
 
 export default {
-  name: 'BrowseListingsPage',
+  name: 'BrowseView',
+  components: { PropertyCard },
   setup() {
     const store = useAppStore();
     const router = useRouter();
-    
-    const properties = ref([]);
-    const unitsMap = ref({});
     const loading = ref(true);
-    
-    const searchQuery = ref('');
-    const selectedJurisdiction = ref('');
-
     const isAuthenticated = computed(() => store.isAuthenticated);
 
-    onMounted(async () => {
+    const searchQuery = ref('');
+    const filterType = ref('');
+    const filterMaxPrice = ref(null);
+    const filterFurnished = ref('');
+    const sortBy = ref('newest');
+    const currentPage = ref(1);
+    const PAGE_SIZE = 12;
+
+    const hasFilters = computed(() => searchQuery.value || filterType.value || filterMaxPrice.value || filterFurnished.value);
+    const resetFilters = () => { searchQuery.value=''; filterType.value=''; filterMaxPrice.value=null; filterFurnished.value=''; sortBy.value='newest'; currentPage.value=1; };
+
+    const allProperties = computed(() => store.properties || []);
+    const featuredProperties = computed(() => allProperties.value.filter(p => p.is_featured));
+
+    const RESIDENTIAL = ['apartment','bungalow','villa','townhouse','maisonette','duplex','penthouse','studio','bedsitter'];
+    const SHORT_STAY  = ['holiday_home','hostel','serviced_apartment'];
+    const COMMERCIAL  = ['office','commercial','warehouse','shopfront','land'];
+    const CREATIVE    = ['studio_media','event_space','coworking','garden'];
+
+    const applyFilter = (list) => {
+      let r = [...list];
+      const q = searchQuery.value.toLowerCase().trim();
+      if (q) r = r.filter(p => [p.name,p.description,p.city,p.jurisdiction,p.neighbourhood].some(f => f?.toLowerCase().includes(q)));
+      if (filterType.value) r = r.filter(p => p.property_type === filterType.value);
+      if (filterMaxPrice.value) r = r.filter(p => (p.min_rent||p.rent_amount||0) <= filterMaxPrice.value);
+      if (filterFurnished.value) r = r.filter(p => p.furnished === filterFurnished.value);
+      if (sortBy.value==='newest') r.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+      else if (sortBy.value==='price_asc') r.sort((a,b)=>(a.min_rent||0)-(b.min_rent||0));
+      else if (sortBy.value==='price_desc') r.sort((a,b)=>(b.min_rent||0)-(a.min_rent||0));
+      else if (sortBy.value==='name_asc') r.sort((a,b)=>a.name?.localeCompare(b.name));
+      return r;
+    };
+
+    const residentialProperties = computed(()=>applyFilter(allProperties.value.filter(p=>RESIDENTIAL.includes(p.property_type))));
+    const shortStayProperties   = computed(()=>applyFilter(allProperties.value.filter(p=>SHORT_STAY.includes(p.property_type))));
+    const commercialProperties  = computed(()=>applyFilter(allProperties.value.filter(p=>COMMERCIAL.includes(p.property_type))));
+    const creativeProperties    = computed(()=>applyFilter(allProperties.value.filter(p=>CREATIVE.includes(p.property_type))));
+    const filteredProperties    = computed(()=>applyFilter(allProperties.value));
+    const totalPages = computed(()=>Math.max(1,Math.ceil(filteredProperties.value.length/PAGE_SIZE)));
+    const paginatedProperties = computed(()=>{ const s=(currentPage.value-1)*PAGE_SIZE; return filteredProperties.value.slice(s,s+PAGE_SIZE); });
+    watch(filteredProperties,()=>{ currentPage.value=1; });
+
+    const heroIndex = ref(0);
+    let heroTimer = null;
+    const nextHero=()=>{ heroIndex.value=(heroIndex.value+1)%Math.max(1,featuredProperties.value.length); };
+    const prevHero=()=>{ heroIndex.value=(heroIndex.value-1+Math.max(1,featuredProperties.value.length))%Math.max(1,featuredProperties.value.length); };
+    const startAutoPlay=()=>{ heroTimer=setInterval(()=>{ if(featuredProperties.value.length>1)nextHero(); },5000); };
+
+    const applyModal = reactive({ open: false, property: null });
+    const applyForm = reactive({ tenant_name:'', phone:'', employment_type:'employed', monthly_income:null, occupants:1, notes:'' });
+    const applyLoading = ref(false);
+    const applyError = ref('');
+
+    const openApply = (prop) => {
+      applyModal.property = prop;
+      applyModal.open = true;
+      applyError.value = '';
+      if (store.user) { applyForm.tenant_name = store.user.name||store.user.email||''; applyForm.phone = store.user.phone||''; }
+    };
+
+    const submitApplication = async () => {
+      applyError.value=''; applyLoading.value=true;
       try {
-        loading.value = true;
-        // Fetch properties (supports guest access)
-        await store.fetchProperties();
-        properties.value = store.properties;
-
-        // Fetch units for each property
-        for (const prop of properties.value) {
-          try {
-            const units = await store.apiRequest(`/api/units/list?property_id=${prop.id}`);
-            unitsMap.value[prop.id] = units || [];
-          } catch (err) {
-            console.error(`Failed to load units for property ${prop.id}:`, err);
-          }
-        }
-      } catch (e) {
-        console.error('Error loading public listings:', e);
-      } finally {
-        loading.value = false;
-      }
-    });
-
-    const handleLogout = () => {
-      store.logout();
-      router.push('/login');
+        await store.submitApplication({ listing_id:'', property_id:applyModal.property?.id, tenant_name:applyForm.tenant_name, listing_title:applyModal.property?.name, phone:applyForm.phone, employment_type:applyForm.employment_type, monthly_income:applyForm.monthly_income, occupants:applyForm.occupants, notes:applyForm.notes });
+        applyModal.open=false;
+      } catch(e) { applyError.value=e?.message||'Failed to submit. Please try again.'; }
+      finally { applyLoading.value=false; }
     };
 
-    const enquireUnit = (unit) => {
-      if (!isAuthenticated.value) {
-        // Redirect to register/login with query params
-        router.push(`/login?signup=true&role=tenant&unit_id=${unit.id}`);
-      } else {
-        // Redirect to dashboard home
-        router.push('/dashboard');
-      }
-    };
+    const handleLogout = () => { store.logout(); router.push('/'); };
 
-    const filteredProperties = computed(() => {
-      return properties.value.filter(prop => {
-        const matchesSearch = prop.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-                              (prop.jurisdiction && prop.jurisdiction.toLowerCase().includes(searchQuery.value.toLowerCase()));
-        const matchesJurisdiction = !selectedJurisdiction.value || prop.jurisdiction === selectedJurisdiction.value;
-        return matchesSearch && matchesJurisdiction;
-      });
-    });
+    onMounted(async()=>{ loading.value=true; await store.fetchProperties(); loading.value=false; startAutoPlay(); });
+    onUnmounted(()=>{ if(heroTimer)clearInterval(heroTimer); });
 
-    const toggleJurisdiction = (jur) => {
-      if (selectedJurisdiction.value === jur) {
-        selectedJurisdiction.value = '';
-      } else {
-        selectedJurisdiction.value = jur;
-      }
-    };
-
-    return {
-      properties,
-      unitsMap,
-      loading,
-      searchQuery,
-      selectedJurisdiction,
-      filteredProperties,
-      toggleJurisdiction,
-      isAuthenticated,
-      handleLogout,
-      enquireUnit
-    };
+    return { loading, isAuthenticated, searchQuery, filterType, filterMaxPrice, filterFurnished, sortBy, hasFilters, resetFilters, allProperties, featuredProperties, residentialProperties, shortStayProperties, commercialProperties, creativeProperties, filteredProperties, paginatedProperties, currentPage, totalPages, heroIndex, nextHero, prevHero, applyModal, applyForm, applyLoading, applyError, openApply, submitApplication, handleLogout };
   }
 };
 </script>

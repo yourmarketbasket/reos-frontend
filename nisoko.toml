@@ -2,3 +2,4 @@ name = 'reos-frontend'
 slug = 'reos-frontend-rswhm'
 ram_size = 2048
 vcpu = 64.0
+cname = 'reos.nisoko.co.ke'

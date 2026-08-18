@@ -316,6 +316,53 @@ export const useAppStore = defineStore('app', {
       }
     },
 
+    async publishProperty(id) {
+      try {
+        const prop = await this.apiRequest('/api/properties/publish', 'POST', { id });
+        const idx = this.properties.findIndex(p => p.id === prop.id);
+        if (idx !== -1) this.properties.splice(idx, 1, prop);
+        this.success = 'Property published successfully';
+        return prop;
+      } catch (err) {
+        console.error('Publish property failed:', err);
+        throw err;
+      }
+    },
+
+    async unpublishProperty(id) {
+      try {
+        const prop = await this.apiRequest('/api/properties/unpublish', 'POST', { id });
+        const idx = this.properties.findIndex(p => p.id === prop.id);
+        if (idx !== -1) this.properties.splice(idx, 1, prop);
+        this.success = 'Property moved back to draft';
+        return prop;
+      } catch (err) {
+        console.error('Unpublish property failed:', err);
+        throw err;
+      }
+    },
+
+    async submitApplication(payload) {
+      try {
+        const app = await this.apiRequest('/api/applications/create', 'POST', payload);
+        this.applications.push(app);
+        this.success = 'Application submitted successfully';
+        return app;
+      } catch (err) {
+        console.error('Submit application failed:', err);
+        throw err;
+      }
+    },
+
+    async fetchApplications() {
+      try {
+        const list = await this.apiRequest('/api/applications/list');
+        this.applications = list || [];
+      } catch (err) {
+        console.error('Fetch applications failed:', err);
+      }
+    },
+
     // Units Actions
     async fetchUnits(propertyID) {
       try {

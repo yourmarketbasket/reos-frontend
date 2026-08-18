@@ -37,6 +37,10 @@ const PerformanceView     = () => import('@/views/staff/PerformanceView.vue');
 const routes = [
   {
     path: '/',
+    redirect: '/browse'
+  },
+  {
+    path: '/about',
     name: 'landing',
     component: Landing
   },

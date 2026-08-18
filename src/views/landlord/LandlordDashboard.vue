@@ -167,7 +167,71 @@
       </div>
     </div>
 
-    <!-- Modal: Add Property -->
+    <!-- Properties Portfolio with Publish Status -->
+    <div class="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm">
+      <div class="flex items-center justify-between mb-5">
+        <h2 class="text-sm font-bold font-heading text-slate-800 uppercase tracking-wider">Property Portfolio</h2>
+        <div class="flex items-center gap-2 text-[10px] text-slate-400 font-bold">
+          <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Published</span>
+          <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-slate-300"></span> Draft</span>
+        </div>
+      </div>
+
+      <div v-if="properties.length === 0" class="text-center py-10 text-xs text-slate-400 font-medium">
+        No properties yet. Click "Add Property" to get started.
+      </div>
+
+      <div v-else class="space-y-3">
+        <div
+          v-for="prop in properties"
+          :key="prop.id"
+          class="flex items-center gap-4 p-4 border border-slate-100 rounded-xl hover:border-slate-200 transition-colors group"
+        >
+          <!-- Status indicator -->
+          <div :class="['w-2.5 h-2.5 rounded-full flex-shrink-0 mt-0.5', prop.publish_status === 'published' ? 'bg-emerald-500' : 'bg-slate-300']"></div>
+
+          <!-- Property info -->
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="text-xs font-bold text-slate-800 truncate">{{ prop.name }}</span>
+              <span class="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border"
+                :class="prop.publish_status === 'published'
+                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                  : 'bg-slate-50 text-slate-500 border-slate-200'"
+              >
+                {{ prop.publish_status === 'published' ? 'Published' : 'Draft' }}
+              </span>
+              <span v-if="prop.approval_status === 'pending'" class="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border bg-amber-50 text-amber-700 border-amber-200">Awaiting Approval</span>
+              <span v-if="prop.approval_status === 'rejected'" class="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border bg-red-50 text-red-700 border-red-200">Rejected</span>
+              <span v-if="prop.is_featured" class="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border bg-amber-50 text-amber-700 border-amber-200">⭐ Featured</span>
+            </div>
+            <span class="text-[10px] text-slate-400 font-medium">{{ prop.city || prop.jurisdiction }} · {{ prop.total_units }} units · {{ prop.property_type }}</span>
+          </div>
+
+          <!-- Publish / Unpublish toggle -->
+          <div class="flex items-center gap-2 flex-shrink-0">
+            <button
+              v-if="prop.publish_status !== 'published'"
+              @click="togglePublish(prop, true)"
+              :disabled="publishingId === prop.id || !prop.images?.length"
+              class="text-[10px] font-bold px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+              :title="!prop.images?.length ? 'Add images first to publish' : 'Publish this property'"
+            >
+              {{ publishingId === prop.id ? '...' : 'Publish' }}
+            </button>
+            <button
+              v-else
+              @click="togglePublish(prop, false)"
+              :disabled="publishingId === prop.id"
+              class="text-[10px] font-bold px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition-all disabled:opacity-40"
+            >
+              {{ publishingId === prop.id ? '...' : 'Unpublish' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <Teleport to="body">
       <div v-if="showAddPropertyModal" class="modal-overlay">
         <div class="modal-container">
@@ -332,6 +396,7 @@ export default {
     const showAddPropertyModal = ref(false);
     const showAddListingModal = ref(false);
     const showInviteStaffModal = ref(false);
+    const publishingId = ref(null);
 
     const properties = computed(() => store.properties);
     const listings = computed(() => store.listings);
@@ -484,6 +549,22 @@ export default {
       return Number(val).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
     };
 
+    const togglePublish = async (prop, shouldPublish) => {
+      publishingId.value = prop.id;
+      try {
+        if (shouldPublish) {
+          await store.publishProperty(prop.id);
+        } else {
+          await store.unpublishProperty(prop.id);
+        }
+        await store.fetchProperties();
+      } catch (e) {
+        // error shown via store toast
+      } finally {
+        publishingId.value = null;
+      }
+    };
+
     onMounted(loadData);
 
     return {
@@ -494,6 +575,7 @@ export default {
       showAddPropertyModal,
       showAddListingModal,
       showInviteStaffModal,
+      publishingId,
       propertyForm,
       listingForm,
       shortStayDetails,
@@ -506,6 +588,7 @@ export default {
       submitListing,
       submitInviteStaff,
       triggerUpgrade,
+      togglePublish,
       formatCurrency,
       navigateToAddProperty
     };
