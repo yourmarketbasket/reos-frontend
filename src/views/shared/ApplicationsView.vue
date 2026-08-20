@@ -42,77 +42,86 @@
 
       <!-- Apply Modal -->
       <Teleport to="body">
-        <Transition name="modal-fade">
-          <div v-if="showApplyModal" class="modal-overlay" @click.self="showApplyModal = false">
-            <div class="modal-backdrop" @click="showApplyModal = false"></div>
-            <div class="modal-panel max-w-lg">
-              <div class="modal-accent accent-gold"></div>
-              <div class="p-6 space-y-5">
-                <div class="flex items-start justify-between">
-                  <div>
-                    <h3 class="text-lg font-extrabold text-slate-800">Apply for a Property</h3>
-                    <p class="text-xs text-slate-400 mt-0.5">Fill in your details — our team will contact you shortly.</p>
-                  </div>
-                  <button @click="showApplyModal = false" class="text-slate-400 hover:text-slate-700 p-1">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        <div v-if="showApplyModal" class="modal-overlay">
+          <div class="modal-container max-w-lg">
+            <div class="modal-header">
+              <h3 class="text-sm font-bold font-heading text-slate-800 uppercase">Rental Application Form</h3>
+              <button @click="showApplyModal = false" class="modal-close">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+            <form @submit.prevent="submitApplication" class="space-y-4 p-5">
+              <p class="text-[11px] text-slate-500">
+                Submit your credit evaluation metrics, employment details, and occupants count to the Landlord matching engine.
+              </p>
+
+              <div>
+                <label class="form-label text-[10px]">Select Available Listing <span class="text-rose-500">*</span></label>
+                <div class="relative">
+                  <input v-model="listingSearch" @input="searchListings" type="text" placeholder="Search listing by title or description..." class="form-input text-xs pr-8" id="apply-listing-search"/>
+                  <svg class="absolute right-2.5 top-2.5 w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/></svg>
+                </div>
+                <div v-if="listingResults.length" class="mt-1 bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden z-10 relative max-h-40 overflow-y-auto">
+                  <button type="button" v-for="l in listingResults" :key="l.id" @click="selectListing(l)" class="w-full text-left px-4 py-2 hover:bg-amber-50 transition-colors">
+                    <p class="text-xs font-bold text-slate-800">{{ l.title }}</p>
+                    <p class="text-[9px] text-slate-400">Rent: {{ l.rent_amount?.toLocaleString() }} KES · {{ l.listing_type }}</p>
                   </button>
                 </div>
-
-                <div>
-                  <label class="form-label">Select Property <span class="text-rose-500">*</span></label>
-                  <div class="relative">
-                    <input v-model="propertySearch" @input="searchProperties" type="text" placeholder="Search by name or location..." class="form-input pr-8" id="apply-property-search"/>
-                    <svg class="absolute right-2.5 top-2.5 w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/></svg>
-                  </div>
-                  <div v-if="propertyResults.length" class="mt-1 bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden z-10 relative">
-                    <button v-for="p in propertyResults" :key="p.id" @click="selectProperty(p)" class="w-full text-left px-4 py-2.5 hover:bg-amber-50 transition-colors">
-                      <p class="text-xs font-bold text-slate-800">{{ p.name }}</p>
-                      <p class="text-[10px] text-slate-400">{{ p.jurisdiction }} · {{ p.property_type }}</p>
-                    </button>
-                  </div>
-                  <div v-if="selectedProperty" class="mt-2 flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
-                    <svg class="w-4 h-4 text-amber-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-                    <span class="text-xs font-bold text-amber-700 flex-1">{{ selectedProperty.name }}</span>
-                    <button @click="selectedProperty = null; propertySearch = ''" class="text-amber-400 hover:text-amber-600 text-sm font-bold">✕</button>
-                  </div>
-                </div>
-
-                <div>
-                  <label class="form-label">Full Name <span class="text-rose-500">*</span></label>
-                  <input v-model="applyForm.tenant_name" type="text" class="form-input" placeholder="Your full legal name" id="apply-tenant-name"/>
-                </div>
-                <div>
-                  <label class="form-label">Phone Number <span class="text-rose-500">*</span></label>
-                  <input v-model="applyForm.phone" type="tel" class="form-input" placeholder="+254 7XX XXX XXX" id="apply-phone"/>
-                </div>
-                <div>
-                  <label class="form-label">Employment Status <span class="text-rose-500">*</span></label>
-                  <select v-model="applyForm.employment_type" class="form-input" id="apply-employment">
-                    <option value="">— Select —</option>
-                    <option value="employed">Employed</option>
-                    <option value="self_employed">Self-Employed</option>
-                    <option value="business_owner">Business Owner</option>
-                    <option value="student">Student</option>
-                    <option value="other">Other</option>
-                  </select>
-                </div>
-                <div>
-                  <label class="form-label">Additional Notes</label>
-                  <textarea v-model="applyForm.notes" rows="2" class="form-input resize-none" placeholder="Anything you'd like the landlord to know..." id="apply-notes"></textarea>
-                </div>
-
-                <p v-if="applyError" class="text-xs text-rose-600 font-semibold">{{ applyError }}</p>
-
-                <div class="flex gap-3 pt-1">
-                  <button @click="showApplyModal = false" class="flex-1 btn-ghost">Cancel</button>
-                  <button @click="submitApplication" :disabled="applyLoading" class="flex-1 btn-primary">
-                    {{ applyLoading ? 'Submitting…' : 'Submit Application' }}
-                  </button>
+                <div v-if="selectedListing" class="mt-2 flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+                  <svg class="w-4 h-4 text-amber-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                  <span class="text-xs font-bold text-amber-700 flex-1">{{ selectedListing.title }}</span>
+                  <button type="button" @click="selectedListing = null; listingSearch = ''" class="text-amber-400 hover:text-amber-600 text-sm font-bold">✕</button>
                 </div>
               </div>
-            </div>
+
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="form-label text-[10px]">Full Name <span class="text-rose-500">*</span></label>
+                  <input v-model="applyForm.tenant_name" type="text" class="form-input text-xs" placeholder="Full legal name" required id="apply-tenant-name"/>
+                </div>
+                <div>
+                  <label class="form-label text-[10px]">Phone Number <span class="text-rose-500">*</span></label>
+                  <input v-model="applyForm.phone" type="tel" class="form-input text-xs" placeholder="+254 7XX XXX XXX" required id="apply-phone"/>
+                </div>
+              </div>
+
+              <div>
+                <label class="form-label text-[10px]">Employment / Current Role <span class="text-rose-500">*</span></label>
+                <input v-model="applyForm.employment" type="text" placeholder="e.g. Software Engineer at Safaricom" required class="form-input text-xs" id="apply-employment"/>
+              </div>
+
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="form-label text-[10px]">Monthly Income (KES) <span class="text-rose-500">*</span></label>
+                  <input v-model.number="applyForm.monthly_income" type="number" required class="form-input text-xs" id="apply-monthly-income"/>
+                </div>
+                <div>
+                  <label class="form-label text-[10px]">Credit Score (300-850) <span class="text-rose-500">*</span></label>
+                  <input v-model.number="applyForm.credit_score" type="number" min="300" max="850" required class="form-input text-xs" id="apply-credit-score"/>
+                </div>
+              </div>
+
+              <div>
+                <label class="form-label text-[10px]">Number of Occupants <span class="text-rose-500">*</span></label>
+                <input v-model.number="applyForm.occupants" type="number" min="1" required class="form-input text-xs" id="apply-occupants"/>
+              </div>
+
+              <div>
+                <label class="form-label text-[10px]">Additional Notes</label>
+                <textarea v-model="applyForm.notes" rows="2" class="form-input text-xs resize-none" placeholder="Anything you'd like the landlord to know..." id="apply-notes"></textarea>
+              </div>
+
+              <p v-if="applyError" class="text-xs text-rose-600 font-semibold">{{ applyError }}</p>
+
+              <div class="flex gap-3 pt-3 border-t border-slate-100">
+                <button type="button" @click="showApplyModal = false" class="btn border border-slate-200 text-slate-700 rounded-lg text-xs px-4 py-2 font-semibold flex-1">Cancel</button>
+                <button type="submit" :disabled="applyLoading" class="btn bg-brand-500 hover:bg-brand-600 text-dark rounded-lg text-xs px-4 py-2 font-semibold flex-1">
+                  {{ applyLoading ? 'Submitting…' : 'Submit Application' }}
+                </button>
+              </div>
+            </form>
           </div>
-        </Transition>
+        </div>
       </Teleport>
     </template>
 
@@ -312,11 +321,11 @@ export default {
     // ── TENANT SIDE ───────────────────────────────────────────────
     const myApplications   = ref([]);
     const showApplyModal   = ref(false);
-    const propertySearch   = ref('');
-    const propertyResults  = ref([]);
-    const selectedProperty = ref(null);
-    const allPublicProperties = ref([]);
-    const applyForm = ref({ tenant_name: '', phone: '', employment_type: '', notes: '' });
+    const listingSearch    = ref('');
+    const listingResults   = ref([]);
+    const selectedListing  = ref(null);
+    const allListings      = ref([]);
+    const applyForm = ref({ tenant_name: '', phone: '', employment: '', monthly_income: 0, credit_score: 650, occupants: 1, notes: '' });
     const applyLoading = ref(false);
     const applyError   = ref('');
 
@@ -327,40 +336,46 @@ export default {
       }
     };
 
-    const searchProperties = () => {
-      const q = propertySearch.value.toLowerCase().trim();
-      if (!q) { propertyResults.value = []; return; }
-      propertyResults.value = allPublicProperties.value.filter(p =>
-        (p.name||'').toLowerCase().includes(q) || (p.jurisdiction||'').toLowerCase().includes(q)
+    const searchListings = () => {
+      const q = listingSearch.value.toLowerCase().trim();
+      if (!q) { listingResults.value = []; return; }
+      listingResults.value = allListings.value.filter(l =>
+        (l.title||'').toLowerCase().includes(q) || (l.description||'').toLowerCase().includes(q)
       ).slice(0, 6);
     };
 
-    const selectProperty = (p) => {
-      selectedProperty.value = p;
-      propertySearch.value   = p.name;
-      propertyResults.value  = [];
+    const selectListing = (l) => {
+      selectedListing.value = l;
+      listingSearch.value   = l.title;
+      listingResults.value  = [];
     };
 
     const submitApplication = async () => {
       applyError.value = '';
-      if (!selectedProperty.value)             { applyError.value = 'Please select a property.'; return; }
+      if (!selectedListing.value) { applyError.value = 'Please select a listing.'; return; }
       if (!applyForm.value.tenant_name.trim()) { applyError.value = 'Full name is required.'; return; }
       if (!applyForm.value.phone.trim())       { applyError.value = 'Phone number is required.'; return; }
-      if (!applyForm.value.employment_type)    { applyError.value = 'Employment status is required.'; return; }
+      if (!applyForm.value.employment.trim())  { applyError.value = 'Employment/current role is required.'; return; }
       applyLoading.value = true;
       try {
-        await store.submitApplication({
-          property_id:   selectedProperty.value.id,
-          listing_title: selectedProperty.value.name,
-          ...applyForm.value,
-        });
+        await store.createApplication(
+          selectedListing.value.id,
+          selectedListing.value.title,
+          applyForm.value.tenant_name,
+          store.user?.email || '',
+          applyForm.value.phone,
+          applyForm.value.employment,
+          applyForm.value.monthly_income,
+          applyForm.value.occupants,
+          applyForm.value.credit_score
+        );
         showApplyModal.value   = false;
-        applyForm.value        = { tenant_name: '', phone: '', employment_type: '', notes: '' };
-        selectedProperty.value = null;
-        propertySearch.value   = '';
+        applyForm.value        = { tenant_name: '', phone: '', employment: '', monthly_income: 0, credit_score: 650, occupants: 1, notes: '' };
+        selectedListing.value  = null;
+        listingSearch.value    = '';
         store.success = 'Application submitted successfully!';
         await loadMyApplications();
-      } catch { applyError.value = 'Submission failed. Please try again.'; }
+      } catch (err) { applyError.value = err.message || 'Submission failed. Please try again.'; }
       finally  { applyLoading.value = false; }
     };
 
@@ -369,9 +384,9 @@ export default {
       catch { myApplications.value = []; }
     };
 
-    const loadPublicProperties = async () => {
-      try   { const data = await store.fetchPublicProperties?.(); allPublicProperties.value = Array.isArray(data) ? data : []; }
-      catch { allPublicProperties.value = []; }
+    const loadListings = async () => {
+      try   { await store.fetchListings(); allListings.value = store.listings || []; }
+      catch { allListings.value = []; }
     };
 
     // ── MANAGEMENT SIDE ───────────────────────────────────────────
@@ -458,7 +473,7 @@ export default {
     onMounted(async () => {
       prefillApplyForm();
       if (isTenant.value) {
-        await Promise.all([loadMyApplications(), loadPublicProperties()]);
+        await Promise.all([loadMyApplications(), loadListings()]);
       } else {
         await loadApplications();
       }
@@ -466,10 +481,11 @@ export default {
 
     return {
       isTenant,
+      userRole,
       // tenant
       myApplications, showApplyModal, applyForm, applyLoading, applyError,
-      propertySearch, propertyResults, selectedProperty,
-      searchProperties, selectProperty, submitApplication,
+      listingSearch, listingResults, selectedListing,
+      searchListings, selectListing, submitApplication,
       // management
       store, searchQuery, statusFilter, sortKey, sortDir, columns,
       filteredApplications, sortedApplications, selectedApp,

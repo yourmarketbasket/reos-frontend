@@ -435,6 +435,7 @@ export default {
 
     return {
       isTenant,
+      userRole,
       // tenant
       myLease,
       // shared
